@@ -13,9 +13,4 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @Query("select c from Customer c where c.orders is not empty")
     List<Customer> findByOrdersNotEmpty();
 
-//    @Query("SELECT c FROM  Customer c")
-//    List<Customer> findAllWithOrders();
-
-
-
 }
