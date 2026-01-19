@@ -14,10 +14,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     Page<Customer> findByLastNameContainingIgnoreCase(String lastName, Pageable pageable);
 
-    Page<Customer> findByFirstNameContainingIgnoreCase(String firstName, Pageable pageable);
-
-    Optional<Customer> findByLastNameIgnoreCaseAndFirstNameIgnoreCase(String lastName, String firstName);
-
     // Fetch graphs (use when you know you need relationships)
     @EntityGraph(attributePaths = { "orders" })
     Optional<Customer> findWithOrdersById(Long id);
@@ -25,7 +21,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @EntityGraph(attributePaths = { "contactInfo" })
     Optional<Customer> findWithContactInfoById(Long id);
 
-    // "Big" graph: customer -> orders -> products
     @EntityGraph(attributePaths = { "orders", "orders.products" })
     Optional<Customer> findWithOrdersAndProductsById(Long id);
 
