@@ -13,7 +13,7 @@ public class Product {
     private Long id;
 
     @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
-    private Set<Order> customerOrders = new HashSet<>();
+    private Set<Order> orders = new HashSet<>();
 
     private String name;
     private String description;
@@ -43,7 +43,7 @@ public class Product {
     }
 
     public Set<Order> getOrders() {
-        return customerOrders;
+        return orders;
     }
 
     public void setId(Long id) {
