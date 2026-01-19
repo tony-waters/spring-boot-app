@@ -25,14 +25,18 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findWithOrdersAndProductsById(Long id);
 
 
-    @Query("""
-        select c.id as customerId,
-               c.firstName as firstName,
-               c.lastName as lastName,
-               count(o.id) as orderCount
-        from Customer c
-        left join c.orders o
-        group by c.id, c.firstName, c.lastName
-        """)
+    @Query(
+        value = """
+            select c.id as customerId,
+                   c.firstName as firstName,
+                   c.lastName as lastName,
+                   count(o.id) as orderCount
+            from Customer c
+            left join c.orders o
+            group by c.id, c.firstName, c.lastName
+            order by c.lastName
+            """,
+        countQuery = "select count(c) from Customer c"
+    )
     Page<CustomerWithOrderCount> findCustomersAndOrderCount(Pageable pageable);
 }
