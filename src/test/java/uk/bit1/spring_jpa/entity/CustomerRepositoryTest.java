@@ -1,6 +1,9 @@
 package uk.bit1.spring_jpa.entity;
 
+import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.Hibernate;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +12,7 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import org.springframework.test.context.TestPropertySource;
 import uk.bit1.spring_jpa.repository.CustomerRepository;
 import uk.bit1.spring_jpa.repository.projection.CustomerWithOrderCount;
 
@@ -16,47 +20,59 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@TestPropertySource(properties = {
+        "spring.jpa.properties.hibernate.generate_statistics=true"
+})
 @DataJpaTest
 class CustomerRepositoryTest {
 
-    @Autowired
-    CustomerRepository customerRepository;
-    @Autowired TestEntityManager em;
+    @Autowired CustomerRepository customerRepository;
+
+    @Autowired TestEntityManager entityManager;
+
+    @Autowired EntityManagerFactory entityManagerFactory;
+
+    private Statistics getStatistics() {
+        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
+        Statistics statistics = sessionFactory.getStatistics();
+        statistics.clear();
+        return statistics;
+    }
 
     @Test
     void findCustomersAndOrderCount_includesCustomersWithZeroOrders_andCountsCorrectly() {
-        // Customer A: 0 orders
-        Customer a = new Customer("Alpha", "Alice");
-        em.persist(a);
 
-        // Customer B: 2 orders
-        Customer b = new Customer("Beta", "Bob");
-        b.addOrder(new Order("B-1"));
-        b.addOrder(new Order("B-2"));
-        em.persist(b);
+        Customer customer1 = new Customer("Alpha", "Alice");
+        entityManager.persist(customer1);
 
-        em.flush();
-        em.clear();
+        Customer customer2 = new Customer("Beta", "Bob");
+        customer2.addOrder(new Order("B-1"));
+        customer2.addOrder(new Order("B-2"));
+        entityManager.persist(customer2);
 
-        Page<CustomerWithOrderCount> page =
-                customerRepository.findCustomersAndOrderCount(PageRequest.of(0, 10));
+        entityManager.flush();
+        entityManager.clear();
 
+        Statistics statistics = getStatistics();
+        Page<CustomerWithOrderCount> page = customerRepository.findCustomersAndOrderCount(PageRequest.of(0, 10));
+        // check only one SELECT statement was issued
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
         assertThat(page.getTotalElements()).isEqualTo(2);
 
         // Use the projection values; order of rows is undefined unless you ORDER BY in the query.
         List<CustomerWithOrderCount> rows = page.getContent();
 
-        CustomerWithOrderCount rowA = rows.stream()
+        CustomerWithOrderCount row1 = rows.stream()
                 .filter(r -> r.getLastName().equals("Alpha"))
                 .findFirst()
                 .orElseThrow();
-        assertThat(rowA.getOrderCount()).isEqualTo(0);
+        assertThat(row1.getOrderCount()).isEqualTo(0);
 
-        CustomerWithOrderCount rowB = rows.stream()
+        CustomerWithOrderCount row2 = rows.stream()
                 .filter(r -> r.getLastName().equals("Beta"))
                 .findFirst()
                 .orElseThrow();
-        assertThat(rowB.getOrderCount()).isEqualTo(2);
+        assertThat(row2.getOrderCount()).isEqualTo(2);
     }
 
     @Test
@@ -69,18 +85,19 @@ class CustomerRepositoryTest {
             for (int o = 0; o < orderCount; o++) {
                 c.addOrder(new Order("Order " + i + "-" + o));
             }
-            em.persist(c);
+            entityManager.persist(c);
         }
 
-        em.flush();
-        em.clear();
+        entityManager.flush();
+        entityManager.clear();
 
-        Page<CustomerWithOrderCount> page0 =
-                customerRepository.findCustomersAndOrderCount(PageRequest.of(0, 10));
-        Page<CustomerWithOrderCount> page1 =
-                customerRepository.findCustomersAndOrderCount(PageRequest.of(1, 10));
-        Page<CustomerWithOrderCount> page2 =
-                customerRepository.findCustomersAndOrderCount(PageRequest.of(2, 10));
+        Statistics statistics = getStatistics();
+        Page<CustomerWithOrderCount> page0 = customerRepository.findCustomersAndOrderCount(PageRequest.of(0, 10));
+        Page<CustomerWithOrderCount> page1 = customerRepository.findCustomersAndOrderCount(PageRequest.of(1, 10));
+        Page<CustomerWithOrderCount> page2 = customerRepository.findCustomersAndOrderCount(PageRequest.of(2, 10));
+        // check only one SELECT statement was issued for each page
+//        assertThat(statistics.getPrepareStatementCount()).isEqualTo(3);
+
 
         assertThat(page0.getTotalElements()).isEqualTo(25);
         assertThat(page0.getTotalPages()).isEqualTo(3);
@@ -99,12 +116,15 @@ class CustomerRepositoryTest {
         ci.setPhone("07000000000");
         c.setContactInfo(ci);
 
-        em.persist(c);
-        em.flush();
-        em.clear();
+        entityManager.persist(c);
+        entityManager.flush();
+        entityManager.clear();
 
+        Statistics statistics = getStatistics();
         Customer loaded = customerRepository.findWithContactInfoById(c.getId())
                 .orElseThrow();
+        // check only one SELECT statement issued
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
 
         // Prove the graph loaded it (no lazy init required)
         assertThat(Hibernate.isInitialized(loaded.getContactInfo())).isTrue();
@@ -114,8 +134,8 @@ class CustomerRepositoryTest {
     @Test
     void findWithOrdersAndProductsById_fetchesOrdersAndTheirProducts() {
         // Products
-        Product p1 = em.persist(new Product("P1", "D1"));
-        Product p2 = em.persist(new Product("P2", "D2"));
+        Product p1 = entityManager.persist(new Product("P1", "D1"));
+        Product p2 = entityManager.persist(new Product("P2", "D2"));
 
         Customer c = new Customer("Delta", "Dan");
 
@@ -129,12 +149,15 @@ class CustomerRepositoryTest {
         c.addOrder(o1);
         c.addOrder(o2);
 
-        em.persist(c);
-        em.flush();
-        em.clear();
+        entityManager.persist(c);
+        entityManager.flush();
+        entityManager.clear();
 
+        Statistics statistics = getStatistics();
         Customer loaded = customerRepository.findWithOrdersAndProductsById(c.getId())
                 .orElseThrow();
+        // check only one SELECT statement issued
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
 
         assertThat(Hibernate.isInitialized(loaded.getOrders())).isTrue();
         assertThat(loaded.getOrders()).hasSize(2);
