@@ -26,10 +26,6 @@ public class Product {
         this.description = description;
     }
 
-//    public void addOrder(CustomerOrder customerOrder) {
-//        customerOrders.add(customerOrder);
-//    }
-
     public Long getId() {
         return id;
     }
