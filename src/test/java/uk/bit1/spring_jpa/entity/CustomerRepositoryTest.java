@@ -55,8 +55,8 @@ class CustomerRepositoryTest {
 
         Statistics statistics = getStatistics();
         Page<CustomerWithOrderCount> page = customerRepository.findCustomersAndOrderCount(PageRequest.of(0, 10));
-        // check only one SELECT statement was issued
-        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
+        // hibernate may (depending on implementation) optimise last page and not bother running the SELECT count as it can infer from pages being less than 10
+        assertThat(statistics.getPrepareStatementCount()).isBetween(1L, 2L);
         assertThat(page.getTotalElements()).isEqualTo(2);
 
         // Use the projection values; order of rows is undefined unless you ORDER BY in the query.
@@ -93,11 +93,16 @@ class CustomerRepositoryTest {
 
         Statistics statistics = getStatistics();
         Page<CustomerWithOrderCount> page0 = customerRepository.findCustomersAndOrderCount(PageRequest.of(0, 10));
-        Page<CustomerWithOrderCount> page1 = customerRepository.findCustomersAndOrderCount(PageRequest.of(1, 10));
-        Page<CustomerWithOrderCount> page2 = customerRepository.findCustomersAndOrderCount(PageRequest.of(2, 10));
-        // check only one SELECT statement was issued for each page
-//        assertThat(statistics.getPrepareStatementCount()).isEqualTo(3);
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(2);
 
+        statistics = getStatistics();
+        Page<CustomerWithOrderCount> page1 = customerRepository.findCustomersAndOrderCount(PageRequest.of(1, 10));
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(2);
+
+        statistics = getStatistics();
+        Page<CustomerWithOrderCount> page2 = customerRepository.findCustomersAndOrderCount(PageRequest.of(2, 10));
+        // hibernate may (depending on implementation) optimise last page and not bother running the SELECT count as it can infer from pages being less than 10
+        assertThat(statistics.getPrepareStatementCount()).isBetween(1L, 2L);
 
         assertThat(page0.getTotalElements()).isEqualTo(25);
         assertThat(page0.getTotalPages()).isEqualTo(3);
@@ -123,11 +128,8 @@ class CustomerRepositoryTest {
         Statistics statistics = getStatistics();
         Customer loaded = customerRepository.findWithContactInfoById(c.getId())
                 .orElseThrow();
-        // check only one SELECT statement issued
-        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
-
-        // Prove the graph loaded it (no lazy init required)
-        assertThat(Hibernate.isInitialized(loaded.getContactInfo())).isTrue();
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1); // check only one SELECT statement issued
+        assertThat(Hibernate.isInitialized(loaded.getContactInfo())).isTrue(); // Prove the graph loaded it (no lazy init required)
         assertThat(loaded.getContactInfo().getEmail()).isEqualTo("gina@example.com");
     }
 
@@ -156,8 +158,13 @@ class CustomerRepositoryTest {
         Statistics statistics = getStatistics();
         Customer loaded = customerRepository.findWithOrdersAndProductsById(c.getId())
                 .orElseThrow();
-        // check only one SELECT statement issued
-        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
+        // check only one or two SELECT statement issued
+        // Why it can be 2:
+        // Even with @EntityGraph(attributePaths = {"orders","orders.products"}),
+        // Hibernate may choose a 2-step fetch plan to avoid a big cartesian product:
+        // 1 - Query customer + orders
+        // 2 - Query products for those orders (often via an IN (...))
+        assertThat(statistics.getPrepareStatementCount()).isBetween(1L, 2L);
 
         assertThat(Hibernate.isInitialized(loaded.getOrders())).isTrue();
         assertThat(loaded.getOrders()).hasSize(2);
