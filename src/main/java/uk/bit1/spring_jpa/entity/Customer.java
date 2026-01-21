@@ -14,7 +14,11 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(
+            mappedBy = "customer",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private ContactInfo contactInfo;
 
     @OneToMany(
@@ -30,12 +34,12 @@ public class Customer {
 
     protected Customer() {}
 
-    public Customer(String lastName, String firstName) {
+    protected Customer(String lastName, String firstName) {
         this.lastName= lastName;
         this.firstName = firstName;
     }
 
-    public Customer(Long id, String lastName, String firstName) {
+    protected Customer(Long id, String lastName, String firstName) {
         this(lastName, firstName);
         this.id = id;
     }
