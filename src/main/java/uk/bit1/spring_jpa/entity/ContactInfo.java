@@ -32,9 +32,7 @@ public class ContactInfo {
         return phone;
     }
 
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
+    // no setId() by design
 
     public void setEmail(String email) {
         this.email = email;

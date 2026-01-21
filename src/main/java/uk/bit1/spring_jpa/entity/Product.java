@@ -54,6 +54,8 @@ public class Product {
         this.description = description;
     }
 
+    // no setOrders() by design
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

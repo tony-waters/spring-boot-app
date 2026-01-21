@@ -55,6 +55,13 @@ public class Order {
         }
     }
 
+    public void clearProducts() {
+        // Iterating over a copy avoids ConcurrentModificationException
+        for (Product product : new HashSet<>(products)) {
+            removeProduct(product);
+        }
+    }
+
     public Long getId() {
         return id;
     }
@@ -90,6 +97,8 @@ public class Order {
     public void setCustomer(Customer customer) {
         this.customer = customer;
     }
+
+    // no setProducts() by design
 
     @Override
     public String toString() {

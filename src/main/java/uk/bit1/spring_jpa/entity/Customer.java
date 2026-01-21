@@ -58,6 +58,14 @@ public class Customer {
         }
     }
 
+    public void clearOrders() {
+        // Iterating over a copy avoids ConcurrentModificationException
+        for (Order order : new HashSet<>(orders)) {
+            removeOrder(order);
+        }
+    }
+
+
     public Long getId() {
         return id;
     }
@@ -94,6 +102,8 @@ public class Customer {
             contactInfo.setCustomer(this);
         }
     }
+
+    // no setOrders() by design
 
     @Override
     public String toString() {
