@@ -1,4 +1,4 @@
-package uk.bit1.spring_jpa.entity;
+package uk.bit1.spring_jpa.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +7,6 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import uk.bit1.spring_jpa.entity.ContactInfo;
 import uk.bit1.spring_jpa.entity.Customer;
-import uk.bit1.spring_jpa.repository.ContactInfoRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,10 +21,7 @@ class ContactInfoRepositoryTest {
     void findByEmailIgnoreCase_findsContactInfo() {
         Customer c = new Customer("Alpha", "Alice");
 
-        ContactInfo ci = new ContactInfo();
-        ci.setEmail("alice@example.com");
-        ci.setPhone("0700000000");
-
+        ContactInfo ci = new ContactInfo("alice@example.com", "0700000000");
         c.setContactInfo(ci);
 
         em.persist(c);
@@ -43,8 +39,7 @@ class ContactInfoRepositoryTest {
     void existsByEmailIgnoreCase_returnsCorrectValue() {
         Customer c = new Customer("Beta", "Bob");
 
-        ContactInfo ci = new ContactInfo();
-        ci.setEmail("bob@example.com");
+        ContactInfo ci = new ContactInfo("bob@example.com", "0700000000");
         c.setContactInfo(ci);
 
         em.persist(c);
@@ -60,8 +55,7 @@ class ContactInfoRepositoryTest {
     void findById_usesCustomerIdBecauseOfMapsId() {
         Customer c = new Customer("Gamma", "Gina");
 
-        ContactInfo ci = new ContactInfo();
-        ci.setEmail("gina@example.com");
+        ContactInfo ci = new ContactInfo("gina@example.com", "0700000000");
         c.setContactInfo(ci);
 
         em.persist(c);

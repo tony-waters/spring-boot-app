@@ -37,12 +37,12 @@ public class Customer {
 
     protected Customer() {}
 
-    protected Customer(String lastName, String firstName) {
+    public Customer(String lastName, String firstName) {
         this.lastName= lastName;
         this.firstName = firstName;
     }
 
-    protected Customer(Long id, String lastName, String firstName) {
+    public Customer(Long id, String lastName, String firstName) {
         this(lastName, firstName);
         this.id = id;
     }
@@ -67,7 +67,6 @@ public class Customer {
             removeOrder(order);
         }
     }
-
 
     public Long getId() {
         return id;
@@ -124,6 +123,5 @@ public class Customer {
     public int hashCode() {
         return getClass().hashCode();
     }
-
 
 }

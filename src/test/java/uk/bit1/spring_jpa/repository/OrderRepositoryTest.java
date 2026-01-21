@@ -1,4 +1,4 @@
-package uk.bit1.spring_jpa.entity;
+package uk.bit1.spring_jpa.repository;
 
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.Hibernate;
@@ -11,7 +11,9 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
 
 import org.springframework.test.context.TestPropertySource;
-import uk.bit1.spring_jpa.repository.OrderRepository;
+import uk.bit1.spring_jpa.entity.Customer;
+import uk.bit1.spring_jpa.entity.Order;
+import uk.bit1.spring_jpa.entity.Product;
 import uk.bit1.spring_jpa.repository.projection.OrderWithProductCount;
 
 import java.util.List;

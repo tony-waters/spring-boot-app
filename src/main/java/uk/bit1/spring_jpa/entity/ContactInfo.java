@@ -20,6 +20,11 @@ public class ContactInfo {
 
     protected ContactInfo() {}
 
+    public ContactInfo(String email, String phone) {
+        this.email = email;
+        this.phone = phone;
+    }
+
     public Long getId() {
         return id;
     }

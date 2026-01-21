@@ -1,4 +1,4 @@
-package uk.bit1.spring_jpa.entity;
+package uk.bit1.spring_jpa.repository;
 
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.Hibernate;
@@ -13,7 +13,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import org.springframework.test.context.TestPropertySource;
-import uk.bit1.spring_jpa.repository.CustomerRepository;
+import uk.bit1.spring_jpa.entity.ContactInfo;
+import uk.bit1.spring_jpa.entity.Customer;
+import uk.bit1.spring_jpa.entity.Order;
+import uk.bit1.spring_jpa.entity.Product;
 import uk.bit1.spring_jpa.repository.projection.CustomerWithOrderCount;
 
 import java.util.List;
@@ -116,9 +119,7 @@ class CustomerRepositoryTest {
     void findWithContactInfoById_fetchesContactInfo() {
         Customer c = new Customer("Gamma", "Gina");
 
-        ContactInfo ci = new ContactInfo();
-        ci.setEmail("gina@example.com");
-        ci.setPhone("07000000000");
+        ContactInfo ci = new ContactInfo("gina@example.com", "07000000000");
         c.setContactInfo(ci);
 
         entityManager.persist(c);
