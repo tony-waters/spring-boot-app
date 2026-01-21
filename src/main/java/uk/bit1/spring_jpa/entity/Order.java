@@ -1,7 +1,6 @@
 package uk.bit1.spring_jpa.entity;
 
 import jakarta.persistence.*;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -113,7 +112,7 @@ public class Order {
         }
     }
 
-    // no setProducts() by design
+    // no setProducts by design
 
     @Override
     public String toString() {

@@ -1,10 +1,7 @@
 package uk.bit1.spring_jpa.entity;
 
 import jakarta.persistence.*;
-
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -105,7 +102,7 @@ public class Customer {
         }
     }
 
-    // no setOrders() by design
+    // no setOrders by design
 
     @Override
     public String toString() {
