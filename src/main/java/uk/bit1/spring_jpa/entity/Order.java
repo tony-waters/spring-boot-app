@@ -95,8 +95,22 @@ public class Order {
         this.fulfilled = fulfilled;
     }
 
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
+//    private void setCustomer(Customer customer) {
+//        this.customer = customer;
+//    }
+
+    public void setCustomer(Customer newCustomer) {
+        if (this.customer == newCustomer) return;
+
+        if (this.customer != null) {
+            this.customer.getOrders().remove(this);
+        }
+
+        this.customer = newCustomer;
+
+        if (newCustomer != null) {
+            newCustomer.getOrders().add(this);
+        }
     }
 
     // no setProducts() by design
