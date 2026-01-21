@@ -29,7 +29,10 @@ public class Customer {
     )
     private Set<Order> orders = new HashSet<>();
 
+    @Column(name = "last_name")
     private String lastName;
+
+    @Column(name = "first_name")
     private String firstName;
 
     protected Customer() {}

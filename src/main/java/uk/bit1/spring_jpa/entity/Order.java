@@ -25,6 +25,7 @@ public class Order {
     private Set<Product> products = new HashSet<>();
 
     private String description;
+
     private boolean fulfilled = false;
 
     protected Order() {
