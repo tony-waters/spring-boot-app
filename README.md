@@ -22,9 +22,6 @@ Here a Customer has a @OneToMany relationship with Order (Customers make Orders)
 Orders have a @ManyToMany relationship with Products (an Order can contain many Products, and a Product can be in many Orders).
 And a Customer has a @OneToOne relationship with ContactInfo (each Customer has a single ContactInfo).
 
-Note that in terms of the provided code, particularly the tests, I have focused mostly on the Customer side of things.
-“Many-to-many is convenient for demos; real order systems usually use an OrderLine join entity for quantity/price.”
-
 Of particular note is the Order -> Product relationship.
 This is quite an oversimplification from a business perspective.
 In the real world an Order -> Product relationship would need information attached to it, 
