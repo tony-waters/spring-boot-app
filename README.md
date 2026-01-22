@@ -31,9 +31,10 @@ So its not really a @ManyToMany relationship.
 ## highlights
 
 ## testing
-You do not want to be dealing with bugs from the JPA layer.
+In a Production system you do not want to be dealing with bugs from the JPA layer.
 If you are working on a already-in-production system these bugs have already seeped into the client layer,
 and they may be very difficult to trace.
+All the while your database is persisting these bugs at a data level. 
 So let us try and lock down the JPA Entity layer so we feel confident, and can sleep well at night.
 
 At the same time realise that re-testing what has already been tested is a code smell.
