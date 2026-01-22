@@ -41,7 +41,7 @@ At the same time realise that re-testing what has already been tested is a code 
 It creates unnecessary complexity (more code to read and understand) and diverts attention from the important bits.
 
 With JPA Entities we are operating within a framework where a lot of testing is already taking place.
-So for the sake of brevity we should try and avoid testing the framework itself.
+So for the sake of brevity and sanity we should try and avoid testing the framework itself.
 At the same time we are configuring the framework with Annotations.
 So one question is should we test our use of the JPA annotations is correct?
 We can break this down further as the annotations refer to different facets of the ORM.
