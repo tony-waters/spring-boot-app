@@ -45,7 +45,7 @@ So for the sake of brevity and sanity we should try and avoid testing the framew
 At the same time we are configuring the framework with Annotations.
 So one question is should we test our use of the JPA annotations is correct?
 We can break this down further as the annotations refer to different facets of the ORM.
-...
+
 Its not straightforward what one should be testing where Entites are concerned.
 
 # The Repositories
