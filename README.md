@@ -8,7 +8,7 @@ At its core it allows us to effectively represent @OneToOne, @OneToMany, and @Ma
 
 This repo represents the Java code to show how each of these relationships work on a practical level.
 
-A large part of confidence in releasing something to production is to have the right tests with good code coverage.
+A large part of confidence in releasing something to production is to have the right tests.
 So I have included a realistic set of tests.
 
 Plan is to create the entity/repository layer here, then build other layers over it.
@@ -31,22 +31,26 @@ So its not really a @ManyToMany relationship.
 ## highlights
 
 ## testing
+While its not always straightforward what one should be testing where Entites are concerned,
+we can begin with the tenent that we should test any code/logic we have added.
+In our case this mainly consists of the add, remove, and clear methods we have included in the @ToMany relationships to maintain the realtionship integrity at the DB level.
+
+
 In a Production system you do not want to be dealing with bugs from the JPA layer.
-If you are working on a already-in-production system these bugs have already seeped into the client layer,
+If you are working on a already-in-production system these bugs have already implicated the client layer,
 and they may be very difficult to trace.
-All the while your database is persisting these bugs at a data level. 
+All the while your database is potentially persisting these bugs at a data level.
 So let us try and lock down the JPA Entity layer so we feel confident, and can sleep well at night.
 
 At the same time realise that re-testing what has already been tested is a code smell.
 It creates unnecessary complexity (more code to read and understand) and diverts attention from the important bits.
 
 With JPA Entities we are operating within a framework where a lot of testing is already taking place.
-So for the sake of brevity and sanity we should try and avoid testing the framework itself.
+So for the sake of brevity and sanity we should try and avoid testing the framework itself too much.
 At the same time we are configuring the framework with Annotations.
 So one question is should we test our use of the JPA annotations is correct?
 We can break this down further as the annotations refer to different facets of the ORM.
 
-Its not straightforward what one should be testing where Entites are concerned.
 
 # The Repositories
 
