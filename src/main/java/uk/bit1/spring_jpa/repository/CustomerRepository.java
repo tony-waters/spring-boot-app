@@ -24,7 +24,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @EntityGraph(attributePaths = { "orders", "orders.products" })
     Optional<Customer> findWithOrdersAndProductsById(Long id);
 
-
     @Query(
             value = """
             select c.id as customerId,
@@ -34,7 +33,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
             from Customer c
             left join c.orders o
             group by c.id, c.firstName, c.lastName
-            order by c.lastName
+            order by c.lastName, c.id
             """,
             countQuery = "select count(c) from Customer c"
     )

@@ -9,4 +9,6 @@ public interface ContactInfoRepository extends JpaRepository<ContactInfo, Long> 
 
     Optional<ContactInfo> findByEmailIgnoreCase(String email);
 
+    boolean existsByEmailIgnoreCase(String email);
+
 }

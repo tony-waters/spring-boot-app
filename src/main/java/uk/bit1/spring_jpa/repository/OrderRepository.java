@@ -21,7 +21,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         select o.id as orderId,
                o.description as description,
                o.fulfilled as fulfilled,
-               count(p.id) as productCount
+               count(distinct p.id) as productCount
         from Order o
         left join o.products p
         where o.customer.id = :customerId
@@ -30,13 +30,30 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         """)
     Page<OrderWithProductCount> findOrdersAndProductCountByCustomerId(@Param("customerId") Long customerId, Pageable pageable);
 
+//    @Query("""
+//        select distinct o
+//        from Order o
+//        left join fetch o.products p
+//        where o.customer.id = :customerId
+//        order by o.id
+//        """)
+//    Page<Order> findOrdersWithProductsByCustomerId(@Param("customerId") Long customerId, Pageable pageable);
+
     @Query("""
-        select distinct o
-        from Order o
-        left join fetch o.products p
-        where o.customer.id = :customerId
-        order by o.id
-        """)
-    Page<Order> findOrdersWithProductsByCustomerId(@Param("customerId") Long customerId, Pageable pageable);
+          select o.id
+          from Order o
+          where o.customer.id = :customerId
+          order by o.id
+          """)
+    Page<Long> findOrderIdsByCustomerId(@Param("customerId") Long customerId, Pageable pageable);
+
+    @Query("""
+          select distinct o
+          from Order o
+          left join fetch o.products
+          where o.id in :ids
+          order by o.id
+          """)
+    java.util.List<Order> findOrdersWithProductsByIdIn(@Param("ids") java.util.List<Long> ids);
 
 }
