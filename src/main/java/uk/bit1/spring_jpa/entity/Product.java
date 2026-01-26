@@ -25,20 +25,21 @@ public class Product extends BaseEntity {
         return name;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public Set<Order> getOrders() {
-        return orders;
-    }
-
     public void setName(String name) {
         this.name = name;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Set<Order> getOrders() {
+        // stop modification via the Collection interface
+        return java.util.Collections.unmodifiableSet(orders);
     }
 
     // no setOrders() by design

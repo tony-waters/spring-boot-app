@@ -60,29 +60,34 @@ public class Customer extends BaseEntity {
         return lastName;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public Set<Order> getOrders() { return orders; }
-
-    public ContactInfo getContactInfo() {
-        return contactInfo;
-    }
-
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getFirstName() {
+        return firstName;
     }
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
-    public void setContactInfo(ContactInfo contactInfo) {
-        this.contactInfo = contactInfo;
-        if (contactInfo != null) {
-            contactInfo.setCustomer(this);
+    public ContactInfo getContactInfo() {
+        return contactInfo;
+    }
+
+    public void setContactInfo(ContactInfo newInfo) {
+        if (this.contactInfo != null) {
+            this.contactInfo.setCustomer(null);
         }
+        this.contactInfo = newInfo;
+        if (newInfo != null) {
+            newInfo.setCustomer(this);
+        }
+    }
+
+    public Set<Order> getOrders() {
+        return java.util.Collections.unmodifiableSet(orders);
     }
 
     // no setOrders by design

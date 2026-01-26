@@ -38,7 +38,7 @@ public class ContactInfo extends BaseEntity {
         this.phone = phone;
     }
 
-    public void setCustomer(Customer customer) {
+    protected void setCustomer(Customer customer) {
         this.customer = customer;
     }
 

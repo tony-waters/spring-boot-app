@@ -55,38 +55,37 @@ public class Order extends BaseEntity {
         return description;
     }
 
-    public boolean getFulfilled() {
-        return fulfilled;
-    }
-
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public Set<Product> getProducts() {
-        return products;
-    }
-
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean getFulfilled() {
+        return fulfilled;
     }
 
     public void setFulfilled(boolean fulfilled) {
         this.fulfilled = fulfilled;
     }
 
+    public Customer getCustomer() {
+        return customer;
+    }
+
     protected void setCustomer(Customer newCustomer) {
         if (this.customer == newCustomer) return;
-
         if (this.customer != null) {
             this.customer.getOrders().remove(this);
         }
-
         this.customer = newCustomer;
-
         if (newCustomer != null) {
             newCustomer.getOrders().add(this);
         }
+    }
+
+    public Set<Product> getProducts() {
+        // stop modification via the Collection interface
+        // breaks symmetry (Product.orders not updated)
+        return java.util.Collections.unmodifiableSet(products);
     }
 
     // no setProducts by design
