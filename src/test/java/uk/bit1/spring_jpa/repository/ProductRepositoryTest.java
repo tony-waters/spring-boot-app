@@ -34,9 +34,12 @@ class ProductRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
+//        Statistics statistics = getStatistics();
         assertThat(productRepository.findByNameIgnoreCase("TEA")).isPresent();
+//        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1); // check only one SELECT statement was issued
         assertThat(productRepository.findByNameIgnoreCase("tea")).isPresent();
         assertThat(productRepository.findByNameIgnoreCase("TeA")).isPresent();
+
 
         Product found = productRepository.findByNameIgnoreCase("tEa").orElseThrow();
         assertThat(found.getName()).isEqualTo("Tea");

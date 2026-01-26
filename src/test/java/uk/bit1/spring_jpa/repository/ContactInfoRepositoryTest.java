@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ContactInfoRepositoryTest {
 
     @Autowired ContactInfoRepository contactInfoRepository;
-    @Autowired TestEntityManager em;
+    @Autowired TestEntityManager entityManager;
     @Autowired EntityManagerFactory entityManagerFactory;
 
     private Statistics getStatistics() {
@@ -34,16 +34,15 @@ class ContactInfoRepositoryTest {
         ContactInfo info = new ContactInfo("tony@example.com", "07123456789");
         c.setContactInfo(info);
 
-        em.persist(c);
-        em.flush();
-        em.clear();
+        entityManager.persist(c);
+        entityManager.flush();
+        entityManager.clear();
 
-        assertThat(contactInfoRepository.findByEmailIgnoreCase("TONY@EXAMPLE.COM"))
-                .isPresent();
+//        Statistics statistics = getStatistics();
+        assertThat(contactInfoRepository.findByEmailIgnoreCase("TONY@EXAMPLE.COM")).isPresent();
+//        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1); // check only one SELECT statement was issued
 
-        ContactInfo found =
-                contactInfoRepository.findByEmailIgnoreCase("tony@example.com")
-                        .orElseThrow();
+        ContactInfo found = contactInfoRepository.findByEmailIgnoreCase("tony@example.com").orElseThrow();
 
         assertThat(found.getEmail()).isEqualTo("tony@example.com");
         assertThat(found.getCustomer()).isNotNull();
@@ -55,9 +54,9 @@ class ContactInfoRepositoryTest {
         Customer c = new Customer("Jones", "Belinda");
         c.setContactInfo(new ContactInfo("belinda@example.com", "07000000000"));
 
-        em.persist(c);
-        em.flush();
-        em.clear();
+        entityManager.persist(c);
+        entityManager.flush();
+        entityManager.clear();
 
         assertThat(contactInfoRepository.existsByEmailIgnoreCase("BELINDA@EXAMPLE.COM"))
                 .isTrue();
