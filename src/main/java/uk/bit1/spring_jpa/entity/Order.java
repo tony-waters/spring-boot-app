@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity(name = "CustomerOrder")
+@Entity // (name = "CustomerOrder")
+@Table(name = "customer_orders")
 public class Order extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -30,23 +31,21 @@ public class Order extends BaseEntity {
         this.description = description;
     }
 
-    protected void addProduct(Product product) {
+    public void addProduct(Product product) {
         if(product == null) return;
         if (products.add(product)) {
-//            product.getOrders().add(this);
             product.addOrder(this);
         }
     }
 
-    protected void removeProduct(Product product) {
+    public void removeProduct(Product product) {
         if(product == null) return;
         if (products.remove(product)) {
-//            product.getOrders().remove(this);
             product.removeOrder(this);
         }
     }
 
-    protected void clearProducts() {
+    public void removeAllProducts() {
         // Iterating over a copy avoids ConcurrentModificationException
         for (Product product : new HashSet<>(products)) {
             removeProduct(product);
@@ -61,7 +60,7 @@ public class Order extends BaseEntity {
         this.description = description;
     }
 
-    public boolean getFulfilled() {
+    public boolean isFulfilled() {
         return fulfilled;
     }
 
@@ -76,12 +75,10 @@ public class Order extends BaseEntity {
     protected void setCustomer(Customer newCustomer) {
         if (this.customer == newCustomer) return;
         if (this.customer != null) {
-//            this.customer.getOrders().remove(this);
             this.customer.removeOrder(this);
         }
         this.customer = newCustomer;
         if (newCustomer != null) {
-//            newCustomer.getOrders().add(this);
             newCustomer.addOrder(this);
         }
     }

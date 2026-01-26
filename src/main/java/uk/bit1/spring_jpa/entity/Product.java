@@ -16,13 +16,13 @@ public class Product extends BaseEntity {
     protected Product() {
     }
 
-    public Product(String name, String description) {
+    protected Product(String name, String description) {
         this.name = name;
         this.description = description;
     }
 
     protected void addOrder(Order order) {
-        if(order == null) return;
+        if (order == null) return;
         orders.add(order);
     }
 

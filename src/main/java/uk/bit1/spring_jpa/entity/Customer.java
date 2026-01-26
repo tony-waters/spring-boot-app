@@ -35,21 +35,21 @@ public class Customer extends BaseEntity {
         this.firstName = firstName;
     }
 
-    protected void addOrder(Order order) {
+    public void addOrder(Order order) {
         if(order == null) return;
         if(orders.add(order)) {
             order.setCustomer(this);
         }
     }
 
-    protected void removeOrder(Order order) {
+    public void removeOrder(Order order) {
         if(order == null) return;
         if(orders.remove(order)) {
             order.setCustomer(null);
         }
     }
 
-    protected void clearOrders() {
+    public void removeAllOrders() {
         // Iterating over a copy avoids ConcurrentModificationException
         for (Order order : new HashSet<>(orders)) {
             removeOrder(order);
