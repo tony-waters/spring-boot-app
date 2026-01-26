@@ -31,6 +31,15 @@ So its not really a @ManyToMany relationship.
 ## highlights
 
 ## testing
+
+### add / remove / clear Consistency Tests
+
+### orphan removal Tests
+
+### lock in equals / hashcode correctness Tests
+
+### pressure Tests
+
 While its not always straightforward what one should be testing where Entites are concerned,
 we can begin with the tenent that we should test any code/logic we have added.
 In our case this mainly consists of the add, remove, and clear methods we have included in the @ToMany relationships to maintain the realtionship integrity at the DB level.

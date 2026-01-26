@@ -94,11 +94,7 @@ public class Order {
         this.fulfilled = fulfilled;
     }
 
-//    private void setCustomer(Customer customer) {
-//        this.customer = customer;
-//    }
-
-    public void setCustomer(Customer newCustomer) {
+    protected void setCustomer(Customer newCustomer) {
         if (this.customer == newCustomer) return;
 
         if (this.customer != null) {
