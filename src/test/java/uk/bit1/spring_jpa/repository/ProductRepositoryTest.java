@@ -1,5 +1,8 @@
 package uk.bit1.spring_jpa.repository;
 
+import jakarta.persistence.EntityManagerFactory;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -13,16 +16,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 class ProductRepositoryTest {
 
-    @Autowired
-    TestEntityManager em;
     @Autowired ProductRepository productRepository;
+    @Autowired TestEntityManager entityManager;
+    @Autowired EntityManagerFactory entityManagerFactory;
+
+    private Statistics getStatistics() {
+        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
+        Statistics statistics = sessionFactory.getStatistics();
+        statistics.clear();
+        return statistics;
+    }
 
     @Test
     void findByNameIgnoreCase_findsMatchingProduct() {
         Product tea = new Product("Tea", "Yorkshire");
-        em.persist(tea);
-        em.flush();
-        em.clear();
+        entityManager.persist(tea);
+        entityManager.flush();
+        entityManager.clear();
 
         assertThat(productRepository.findByNameIgnoreCase("TEA")).isPresent();
         assertThat(productRepository.findByNameIgnoreCase("tea")).isPresent();
@@ -35,9 +45,9 @@ class ProductRepositoryTest {
 
     @Test
     void existsByNameIgnoreCase_returnsTrueWhenPresent() {
-        em.persist(new Product("Biscuits", "Hobnobs"));
-        em.flush();
-        em.clear();
+        entityManager.persist(new Product("Biscuits", "Hobnobs"));
+        entityManager.flush();
+        entityManager.clear();
 
         assertThat(productRepository.existsByNameIgnoreCase("biscuits")).isTrue();
         assertThat(productRepository.existsByNameIgnoreCase("BISCUITS")).isTrue();

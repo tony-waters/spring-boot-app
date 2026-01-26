@@ -1,5 +1,8 @@
 package uk.bit1.spring_jpa.repository;
 
+import jakarta.persistence.EntityManagerFactory;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -14,8 +17,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 class ContactInfoRepositoryTest {
 
-    @Autowired TestEntityManager em;
     @Autowired ContactInfoRepository contactInfoRepository;
+    @Autowired TestEntityManager em;
+    @Autowired EntityManagerFactory entityManagerFactory;
+
+    private Statistics getStatistics() {
+        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
+        Statistics statistics = sessionFactory.getStatistics();
+        statistics.clear();
+        return statistics;
+    }
 
     @Test
     void findByEmailIgnoreCase_findsContactInfo() {

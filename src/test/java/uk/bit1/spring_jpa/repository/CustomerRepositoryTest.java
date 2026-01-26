@@ -1,5 +1,8 @@
 package uk.bit1.spring_jpa.repository;
 
+import jakarta.persistence.EntityManagerFactory;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -7,18 +10,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.TestPropertySource;
 import uk.bit1.spring_jpa.entity.Customer;
 import uk.bit1.spring_jpa.entity.Order;
 import uk.bit1.spring_jpa.repository.projection.CustomerWithOrderCount;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@TestPropertySource(properties = {
+        "spring.jpa.properties.hibernate.generate_statistics=true"
+})
 @DataJpaTest
 class CustomerRepositoryTest {
 
-    @Autowired
-    TestEntityManager em;
     @Autowired CustomerRepository customerRepository;
+    @Autowired TestEntityManager em;
+    @Autowired EntityManagerFactory entityManagerFactory;
+
+    private Statistics getStatistics() {
+        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
+        Statistics statistics = sessionFactory.getStatistics();
+        statistics.clear();
+        return statistics;
+    }
 
     @Test
     void findCustomersAndOrderCount_returnsStablePagedProjection() {
