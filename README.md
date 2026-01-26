@@ -34,6 +34,27 @@ So its not really a @ManyToMany relationship.
 
 ## testing
 
+What I’ll cover (and only what’s worth covering for entities):
+
+Bidirectional consistency
+Customer.addOrder/removeOrder/clearOrders
+Order.addProduct/removeProduct/clearProducts
+Customer.setContactInfo(...) with @MapsId
+
+Orphan removal
+removing orders deletes rows
+removing contact info deletes row
+clearing collections removes join rows where appropriate
+
+Immutability / guard rails
+unmodifiable collections can’t be mutated through getters
+ID/audit fields not settable
+
+Equals/hashCode “Set safety”
+transient entities don’t collapse; persisted ones behave as expected
+
+We will avoid CRUD.
+
 ### add / remove / clear Consistency Tests
 
 ### orphan removal Tests

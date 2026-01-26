@@ -21,6 +21,16 @@ public class Product extends BaseEntity {
         this.description = description;
     }
 
+    protected void addOrder(Order order) {
+        if(order == null) return;
+        orders.add(order);
+    }
+
+    protected void removeOrder(Order order) {
+        if(order == null) return;
+        orders.remove(order);
+    }
+
     public String getName() {
         return name;
     }

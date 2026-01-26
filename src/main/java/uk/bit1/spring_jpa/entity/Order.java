@@ -30,21 +30,23 @@ public class Order extends BaseEntity {
         this.description = description;
     }
 
-    public void addProduct(Product product) {
+    protected void addProduct(Product product) {
         if(product == null) return;
         if (products.add(product)) {
-            product.getOrders().add(this);
+//            product.getOrders().add(this);
+            product.addOrder(this);
         }
     }
 
-    public void removeProduct(Product product) {
+    protected void removeProduct(Product product) {
         if(product == null) return;
         if (products.remove(product)) {
-            product.getOrders().remove(this);
+//            product.getOrders().remove(this);
+            product.removeOrder(this);
         }
     }
 
-    public void clearProducts() {
+    protected void clearProducts() {
         // Iterating over a copy avoids ConcurrentModificationException
         for (Product product : new HashSet<>(products)) {
             removeProduct(product);
@@ -74,11 +76,13 @@ public class Order extends BaseEntity {
     protected void setCustomer(Customer newCustomer) {
         if (this.customer == newCustomer) return;
         if (this.customer != null) {
-            this.customer.getOrders().remove(this);
+//            this.customer.getOrders().remove(this);
+            this.customer.removeOrder(this);
         }
         this.customer = newCustomer;
         if (newCustomer != null) {
-            newCustomer.getOrders().add(this);
+//            newCustomer.getOrders().add(this);
+            newCustomer.addOrder(this);
         }
     }
 
