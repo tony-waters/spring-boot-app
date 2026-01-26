@@ -5,11 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-public class Product {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+public class Product extends BaseEntity {
 
     @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
     private Set<Order> orders = new HashSet<>();
@@ -25,10 +21,6 @@ public class Product {
         this.description = description;
     }
 
-    public Long getId() {
-        return id;
-    }
-
     public String getName() {
         return name;
     }
@@ -39,10 +31,6 @@ public class Product {
 
     public Set<Order> getOrders() {
         return orders;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public void setName(String name) {
@@ -59,7 +47,7 @@ public class Product {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Product other)) return false;
-        return id != null && id.equals(other.id);
+        return getId() != null && getId().equals(other.getId());
     }
 
     @Override

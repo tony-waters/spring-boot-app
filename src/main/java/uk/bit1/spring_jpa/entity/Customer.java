@@ -5,11 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-public class Customer {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+public class Customer extends BaseEntity {
 
     @OneToOne(
             mappedBy = "customer",
@@ -39,11 +35,6 @@ public class Customer {
         this.firstName = firstName;
     }
 
-    public Customer(Long id, String lastName, String firstName) {
-        this(lastName, firstName);
-        this.id = id;
-    }
-
     public void addOrder(Order order) {
         if(order == null) return;
         if(orders.add(order)) {
@@ -65,10 +56,6 @@ public class Customer {
         }
     }
 
-    public Long getId() {
-        return id;
-    }
-
     public String getLastName() {
         return lastName;
     }
@@ -81,10 +68,6 @@ public class Customer {
 
     public ContactInfo getContactInfo() {
         return contactInfo;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public void setLastName(String lastName) {
@@ -106,14 +89,14 @@ public class Customer {
 
     @Override
     public String toString() {
-        return "Customer{id=" + id + ", firstName=" + firstName + ", lastName=" + lastName +
+        return "Customer{id=" + getId() + ", firstName=" + firstName + ", lastName=" + lastName +
                 ", orderCount=" + (orders == null ? 0 : orders.size()) + "}";
     }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Customer other)) return false;
-        return id != null && id.equals(other.id);
+        return getId() != null && getId().equals(other.getId());
     }
 
     @Override

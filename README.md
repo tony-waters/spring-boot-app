@@ -30,6 +30,8 @@ So its not really a @ManyToMany relationship.
 
 ## highlights
 
+### inhereting from a BaseEntity
+
 ## testing
 
 ### add / remove / clear Consistency Tests

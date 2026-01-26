@@ -5,11 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity(name = "CustomerOrder")
-public class Order {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+public class Order extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
@@ -34,13 +30,6 @@ public class Order {
         this.description = description;
     }
 
-    public Order(Long id, String description, boolean fulfilled, Customer customer) {
-        this(description);
-        this.id = id;
-        this.fulfilled = fulfilled;
-        setCustomer(customer);
-    }
-
     public void addProduct(Product product) {
         if(product == null) return;
         if (products.add(product)) {
@@ -62,10 +51,6 @@ public class Order {
         }
     }
 
-    public Long getId() {
-        return id;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -80,10 +65,6 @@ public class Order {
 
     public Set<Product> getProducts() {
         return products;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public void setDescription(String description) {
@@ -114,13 +95,13 @@ public class Order {
     public String toString() {
         return String.format(
                 "Order[id=%d, description='%s']",
-                id, description);
+                getId(), description);
     }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Order other)) return false;
-        return id != null && id.equals(other.id);
+        return getId() != null && getId().equals(other.getId());
     }
 
     @Override

@@ -3,10 +3,7 @@ package uk.bit1.spring_jpa.entity;
 import jakarta.persistence.*;
 
 @Entity
-public class ContactInfo {
-
-    @Id
-    private Long id;
+public class ContactInfo extends BaseEntity {
 
     @OneToOne
     @MapsId
@@ -25,10 +22,6 @@ public class ContactInfo {
         this.phone = phone;
     }
 
-    public Long getId() {
-        return id;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -36,8 +29,6 @@ public class ContactInfo {
     public String getPhone() {
         return phone;
     }
-
-    // no setId by design
 
     public void setEmail(String email) {
         this.email = email;
@@ -55,7 +46,7 @@ public class ContactInfo {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ContactInfo other)) return false;
-        return id != null && id.equals(other.id);
+        return getId() != null && getId().equals(other.getId());
     }
 
     @Override
