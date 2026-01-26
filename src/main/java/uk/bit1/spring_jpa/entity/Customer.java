@@ -76,7 +76,7 @@ public class Customer extends BaseEntity {
         return contactInfo;
     }
 
-    protected void setContactInfo(ContactInfo contactInfo) {
+    public void setContactInfo(ContactInfo contactInfo) {
         if (this.contactInfo != null) {
             this.contactInfo.setCustomer(null);
         }
