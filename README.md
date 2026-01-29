@@ -30,7 +30,7 @@ So its not really a @ManyToMany relationship.
 
 ## highlights
 
-### inhereting from a BaseEntity
+### inheriting from a BaseEntity
 
 ## testing
 
