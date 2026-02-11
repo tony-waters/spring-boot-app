@@ -1,22 +1,29 @@
 package uk.bit1.spring_jpa.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+
 import java.time.Instant;
 
 @MappedSuperclass
 public abstract class BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @SequenceGenerator(name="global_seq", sequenceName="global_seq", allocationSize=50)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="global_seq")
+    @Getter
     private Long id;
 
     // Optimistic locking
+    @Getter
     @Version
-    private long version;
+    private Long version;
 
+    @Getter
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Getter
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
@@ -28,25 +35,22 @@ public abstract class BaseEntity {
     }
 
     @PreUpdate
-    protected void onUpdate() {
+    private void onUpdate() {
         this.updatedAt = Instant.now();
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public long getVersion() {
-        return version;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
     // No setters for id/version/timestamps by design.
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BaseEntity that = (BaseEntity) o;
+        return getId() != null && getId().equals(that.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

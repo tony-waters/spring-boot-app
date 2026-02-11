@@ -3,16 +3,22 @@ package uk.bit1.spring_jpa.entity;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Customer extends BaseEntity {
 
-    @OneToOne(
-            mappedBy = "customer",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    private ContactInfo contactInfo;
+//    @OneToOne(
+//            mappedBy = "customer",
+//            cascade = CascadeType.ALL,
+//            orphanRemoval = true
+//    )
+//    private ContactInfo contactInfo;
 
     @OneToMany(
             mappedBy = "customer",
@@ -22,69 +28,70 @@ public class Customer extends BaseEntity {
     )
     private Set<Order> orders = new HashSet<>();
 
-    @Column(name = "last_name")
+    @Getter
+    @NotBlank
+    @Size(min = 2, max = 50)
+    @Column(name = "last_name", length = 50, nullable = false)
     private String lastName;
 
-    @Column(name = "first_name")
+    @Getter
+    @NotBlank
+    @Size(min = 2, max = 50)
+    @Column(name = "first_name", length = 50, nullable = false)
     private String firstName;
-
-    protected Customer() {}
 
     public Customer(String lastName, String firstName) {
         this.lastName= lastName;
         this.firstName = firstName;
     }
 
-    public void addOrder(Order order) {
-        if(order == null) return;
-        if(orders.add(order)) {
-            order.setCustomer(this);
-        }
+    public Order createOrder(String description) {
+        Order order = new Order(description);
+        addOrderInternal(order);
+        return order;
     }
 
-    public void removeOrder(Order order) {
-        if(order == null) return;
-        if(orders.remove(order)) {
-            order.setCustomer(null);
+    private void addOrderInternal(Order order) {
+        if (order == null) throw new IllegalArgumentException("Order must not be null");
+        if (order.getCustomer() != null && order.getCustomer() != this) {
+            throw new IllegalStateException("Cannot move Order between Customers");
         }
+        order.setCustomerInternal(this); // safe even if already set
+        orders.add(order);
     }
 
-    public void removeAllOrders() {
+    public void removeOrderAndDelete(Order order) {
+        if (order == null) return;
+        if (order.getCustomer() != this) {
+            throw new IllegalArgumentException("Order does not belong to this customer");
+        }
+        boolean removed = orders.remove(order);
+        if (!removed) {
+            throw new IllegalStateException("Order was not in Customer.orders (detached instance?)");
+        }
+        // orphanRemoval will delete on flush
+    }
+
+    public void deleteAllOrders() {
         // Iterating over a copy avoids ConcurrentModificationException
         for (Order order : new HashSet<>(orders)) {
-            removeOrder(order);
+            removeOrderAndDelete(order);
         }
     }
 
-    public String getLastName() {
-        return lastName;
-    }
+//    public ContactInfo getContactInfo() {
+//        return contactInfo;
+//    }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public ContactInfo getContactInfo() {
-        return contactInfo;
-    }
-
-    public void setContactInfo(ContactInfo contactInfo) {
-        if (this.contactInfo != null) {
-            this.contactInfo.setCustomer(null);
-        }
-        this.contactInfo = contactInfo;
-        if (contactInfo != null) {
-            contactInfo.setCustomer(this);
-        }
-    }
+//    public void setContactInfo(ContactInfo contactInfo) {
+//        if (this.contactInfo != null) {
+//            this.contactInfo.setCustomer(null);
+//        }
+//        this.contactInfo = contactInfo;
+//        if (contactInfo != null) {
+//            contactInfo.setCustomer(this);
+//        }
+//    }
 
     public Set<Order> getOrders() {
         return java.util.Collections.unmodifiableSet(orders);
@@ -94,19 +101,7 @@ public class Customer extends BaseEntity {
 
     @Override
     public String toString() {
-        return "Customer{id=" + getId() + ", firstName=" + firstName + ", lastName=" + lastName +
-                ", orderCount=" + (orders == null ? 0 : orders.size()) + "}";
-    }
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Customer other)) return false;
-        return getId() != null && getId().equals(other.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
+        return "Customer{id=" + getId() + ", firstName=" + firstName + ", lastName=" + lastName + "}";
     }
 
 }
