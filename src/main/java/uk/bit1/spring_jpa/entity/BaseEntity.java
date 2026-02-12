@@ -42,15 +42,15 @@ public abstract class BaseEntity {
     // No setters for id/version/timestamps by design.
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        BaseEntity that = (BaseEntity) o;
+        if(o == null)  return false;
+        if (!(o instanceof BaseEntity that)) return false;
         return getId() != null && getId().equals(that.getId());
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return getClass().hashCode();
     }
 }

@@ -12,7 +12,7 @@ import java.util.Set;
 
 @Entity
 @Table(
-        name = "support_ticket",
+        name = "ticket",
         indexes = @Index(name = "idx_ticket_customer_id", columnList = "customer_id")
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -49,9 +49,13 @@ public class Ticket extends BaseEntity {
         this.status = TicketStatus.OPEN;
     }
 
+    public void updateStatus(TicketStatus newStatus) {
+        if(newStatus == null) throw new IllegalArgumentException("New status must not be null");
+        this.status = newStatus;
+    }
+
     public Set<Tag> getTags() {
-        // stop modification via the Collection interface
-        // breaks symmetry (Tag.tickets not updated)
+        // stop external modification that could break relationships
         return java.util.Collections.unmodifiableSet(tags);
     }
 

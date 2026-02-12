@@ -54,7 +54,12 @@ public class Customer extends BaseEntity {
 
     private void addTicketInternal(Ticket ticket) {
         if (ticket == null) throw new IllegalArgumentException("Ticket must not be null");
-        if (ticket.getCustomer() != null && ticket.getCustomer() != this) {
+
+        // Object comparison like "ticket.getCustomer() != this" will not work properly
+        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
+        // ... need to force use of 'equals()' method '!this.equals(existing)'
+        Customer existing = ticket.getCustomer();
+        if (existing != null && !this.equals(existing)) {
             throw new IllegalStateException("Cannot move Ticket between Customers");
         }
         ticket.setCustomerInternal(this); // safe even if already set
@@ -63,13 +68,19 @@ public class Customer extends BaseEntity {
 
     public void removeTicketAndDelete(Ticket ticket) {
         if (ticket == null) return;
-        if (ticket.getCustomer() != this) {
+
+        // Object comparison like "ticket.getCustomer() != this" will not work properly
+        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
+        // ... need to force use of 'equals()' method '!this.equals(customer)'
+        Customer customer = ticket.getCustomer();
+        if (!this.equals(customer)) {
             throw new IllegalArgumentException("Ticket does not belong to this Customer");
         }
         boolean removed = tickets.remove(ticket);
         if (!removed) {
             throw new IllegalStateException("Ticket was not in Customer.tickets (detached instance?)");
         }
+        // we do not null Ticket.customer as 'nullable = false'
         // orphanRemoval will delete on flush
     }
 
@@ -81,10 +92,10 @@ public class Customer extends BaseEntity {
     }
 
     public Set<Ticket> getTickets() {
+        // stop external modification that could break relationships
         return java.util.Collections.unmodifiableSet(tickets);
     }
 
-    // no setTickets() by design
 
 //    public ContactInfo getContactInfo() {
 //        return contactInfo;
