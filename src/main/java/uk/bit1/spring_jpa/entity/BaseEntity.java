@@ -2,6 +2,7 @@ package uk.bit1.spring_jpa.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.hibernate.Hibernate;
 
 import java.time.Instant;
 
@@ -11,21 +12,23 @@ public abstract class BaseEntity {
     @Id
     @SequenceGenerator(name="global_seq", sequenceName="global_seq", allocationSize=50)
     @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="global_seq")
-    @Getter
+    @Getter  // no setter by design
     private Long id;
 
     // Optimistic locking
-    @Getter
+    @Getter  // no setter by design
     @Version
     private Long version;
 
-    @Getter
+    @Getter  // no setter by design
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Getter
+    @Getter  // no setter by design
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    // ---- Hooks to set createdAt and updatedAt values ----
 
     @PrePersist
     protected void onCreate() {
@@ -39,18 +42,25 @@ public abstract class BaseEntity {
         this.updatedAt = Instant.now();
     }
 
-    // No setters for id/version/timestamps by design.
+    // ---- equals() and hashCode() ----
 
+    // override equals() and hashCode() to compare DB id
+    // ... needs to be 'proxy safe'
     @Override
     public final boolean equals(Object o) {
-        if(o == null)  return false;
-        // ensure comparison is proxy safe
-        if (!(o instanceof BaseEntity that)) return false;
-        return getId() != null && getId().equals(that.getId());
+        if (this == o) return true;
+        if (o == null) return false;
+
+        // compare the real entity class, not the proxy class
+        if (Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+
+        BaseEntity that = (BaseEntity) o;
+        return id != null && id.equals(that.id);
     }
 
     @Override
     public final int hashCode() {
-        return getClass().hashCode();
+        // stable across proxies and before/after initialization
+        return Hibernate.getClass(this).hashCode();
     }
 }

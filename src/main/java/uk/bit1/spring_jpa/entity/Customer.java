@@ -91,7 +91,7 @@ public class Customer extends BaseEntity {
     private void addTicketInternal(Ticket ticket) {
         if (ticket == null) throw new IllegalArgumentException("Ticket must not be null");
 
-        // Object comparison like "ticket.getCustomer() != this" will not work properly
+        // Object comparison like "<Entity> != this" will not work properly
         // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
         // ... need to ensure use of 'equals()' method '!this.equals(existing)'
         Customer existing = ticket.getCustomer();
