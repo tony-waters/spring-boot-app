@@ -41,9 +41,18 @@ public class Customer extends BaseEntity {
     @Column(name = "first_name", length = 50, nullable = false)
     private String firstName;
 
+    // ---- Constructors ----
+
     public Customer(String lastName, String firstName) {
         this.lastName= lastName;
         this.firstName = firstName;
+    }
+
+    // ---- Public methods ----
+
+    public Set<Ticket> getTickets() {
+        // prevent external modification that could break relationships
+        return java.util.Collections.unmodifiableSet(tickets);
     }
 
     public Ticket createTicket(String description) {
@@ -52,26 +61,12 @@ public class Customer extends BaseEntity {
         return ticket;
     }
 
-    private void addTicketInternal(Ticket ticket) {
-        if (ticket == null) throw new IllegalArgumentException("Ticket must not be null");
-
-        // Object comparison like "ticket.getCustomer() != this" will not work properly
-        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
-        // ... need to force use of 'equals()' method '!this.equals(existing)'
-        Customer existing = ticket.getCustomer();
-        if (existing != null && !this.equals(existing)) {
-            throw new IllegalStateException("Cannot move Ticket between Customers");
-        }
-        ticket.setCustomerInternal(this); // safe even if already set
-        tickets.add(ticket);
-    }
-
     public void removeTicketAndDelete(Ticket ticket) {
         if (ticket == null) return;
 
         // Object comparison like "ticket.getCustomer() != this" will not work properly
         // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
-        // ... need to force use of 'equals()' method '!this.equals(customer)'
+        // ... need to ensure use of 'equals()' method '!this.equals(customer)'
         Customer customer = ticket.getCustomer();
         if (!this.equals(customer)) {
             throw new IllegalArgumentException("Ticket does not belong to this Customer");
@@ -91,11 +86,21 @@ public class Customer extends BaseEntity {
         }
     }
 
-    public Set<Ticket> getTickets() {
-        // stop external modification that could break relationships
-        return java.util.Collections.unmodifiableSet(tickets);
-    }
+    // ---- Internal helper methods ----
 
+    private void addTicketInternal(Ticket ticket) {
+        if (ticket == null) throw new IllegalArgumentException("Ticket must not be null");
+
+        // Object comparison like "ticket.getCustomer() != this" will not work properly
+        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
+        // ... need to ensure use of 'equals()' method '!this.equals(existing)'
+        Customer existing = ticket.getCustomer();
+        if (existing != null && !this.equals(existing)) {
+            throw new IllegalStateException("Cannot move Ticket between Customers");
+        }
+        ticket.setCustomerInternal(this); // safe even if already set
+        tickets.add(ticket);
+    }
 
 //    public ContactInfo getContactInfo() {
 //        return contactInfo;
@@ -111,7 +116,7 @@ public class Customer extends BaseEntity {
 //        }
 //    }
 
-
+    // ---- General ----
 
     @Override
     public String toString() {

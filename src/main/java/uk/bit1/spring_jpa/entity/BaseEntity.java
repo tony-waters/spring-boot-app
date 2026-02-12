@@ -43,8 +43,8 @@ public abstract class BaseEntity {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
         if(o == null)  return false;
+        // ensure comparison is proxy safe
         if (!(o instanceof BaseEntity that)) return false;
         return getId() != null && getId().equals(that.getId());
     }

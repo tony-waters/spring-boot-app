@@ -43,11 +43,15 @@ public class Ticket extends BaseEntity {
     @Column(nullable = false, length = 20)
     private TicketStatus status;
 
+    // ---- Constructors ----
+
     Ticket(String description) {
         if (description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be empty");
         this.description = description;
         this.status = TicketStatus.OPEN;
     }
+
+    // ---- Public methods ----
 
     public void updateStatus(TicketStatus newStatus) {
         if(newStatus == null) throw new IllegalArgumentException("New status must not be null");
@@ -55,7 +59,7 @@ public class Ticket extends BaseEntity {
     }
 
     public Set<Tag> getTags() {
-        // stop external modification that could break relationships
+        // prevent external modification that could break relationships
         return java.util.Collections.unmodifiableSet(tags);
     }
 
@@ -79,13 +83,21 @@ public class Ticket extends BaseEntity {
         }
     }
 
+    // ---- Internal helper methods ----
+
     void setCustomerInternal(Customer customer) {
         if (customer == null) throw new IllegalArgumentException("Ticket must have a Customer");
-        if (this.customer != null && this.customer != customer) {
+
+        // Object comparison like "this.customer != customer" will not work properly
+        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
+        // ... need to ensure use of 'equals()' method '!this.customer.equals(customer)'
+        if (this.customer != null && !this.customer.equals(customer)) {
             throw new IllegalStateException("Ticket customer cannot be changed; delete and recreate instead");
         }
         this.customer = customer;
     }
+
+    // ---- General ----
 
     @Override
     public String toString() {

@@ -1,7 +1,9 @@
 package uk.bit1.spring_jpa.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,6 +13,7 @@ import java.util.Set;
         name = "tag",
         uniqueConstraints = @UniqueConstraint(name = "uc_tag_name", columnNames = "name")
 )
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Tag extends BaseEntity {
 
     @Getter // no setter by design
@@ -21,7 +24,7 @@ public class Tag extends BaseEntity {
     @ManyToMany(mappedBy = "tags")
     private Set<Ticket> tickets = new HashSet<>();
 
-    protected Tag() {}
+    // ---- Public methods ----
 
     public Tag(String name) {
         if (name == null || name.isBlank()) throw new IllegalArgumentException("Tag name must not be blank");
@@ -32,7 +35,8 @@ public class Tag extends BaseEntity {
         return java.util.Collections.unmodifiableSet(tickets);
     }
 
-    // package-private to stop random callers messing with invariants
+    // ---- Internal helper methods ----
+
     void addTicketInternal(Ticket ticket) {
         tickets.add(ticket);
     }
