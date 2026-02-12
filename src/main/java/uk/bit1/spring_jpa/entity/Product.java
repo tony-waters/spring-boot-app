@@ -54,15 +54,4 @@
 //
 //    // no setOrders() by design
 //
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (!(o instanceof Product other)) return false;
-//        return getId() != null && getId().equals(other.getId());
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        return getClass().hashCode();
-//    }
 //}
