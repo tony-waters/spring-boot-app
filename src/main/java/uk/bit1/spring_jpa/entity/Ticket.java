@@ -51,11 +51,13 @@ public class Ticket extends BaseEntity {
         this.status = TicketStatus.OPEN;
     }
 
-    // ---- Public methods ----
+    // ---- Domain methods ----
 
-    public void updateStatus(TicketStatus newStatus) {
+    public void updateTicket(TicketStatus newStatus, String newDescription) {
         if(newStatus == null) throw new IllegalArgumentException("New status must not be null");
+        if(newDescription == null || newDescription.isBlank()) throw new IllegalArgumentException("Description must not be empty");
         this.status = newStatus;
+        this.description = newDescription;
     }
 
     public Set<Tag> getTags() {
@@ -69,7 +71,6 @@ public class Ticket extends BaseEntity {
             tag.addTicketInternal(this);
         }
     }
-
     public void removeTag(Tag tag) {
         if (tag == null) return;
         if (tags.remove(tag)) {

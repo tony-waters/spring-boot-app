@@ -25,7 +25,7 @@ public abstract class BaseEntity {
     private Instant createdAt;
 
     @Getter  // no setter by design
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = false, updatable = true)
     private Instant updatedAt;
 
     // ---- Hooks to set createdAt and updatedAt values ----
@@ -44,6 +44,8 @@ public abstract class BaseEntity {
 
     // ---- equals() and hashCode() ----
 
+//    public abstract Long getId();
+
     // override equals() and hashCode() to compare DB id
     // ... needs to be 'proxy safe'
     @Override
@@ -55,12 +57,13 @@ public abstract class BaseEntity {
         if (Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
 
         BaseEntity that = (BaseEntity) o;
-        return id != null && id.equals(that.id);
+        return getId() != null && getId().equals(that.getId());
     }
 
     @Override
     public final int hashCode() {
         // stable across proxies and before/after initialization
+        // ... though not the best performing approach
         return Hibernate.getClass(this).hashCode();
     }
 }

@@ -24,12 +24,14 @@ public class Tag extends BaseEntity {
     @ManyToMany(mappedBy = "tags")
     private Set<Ticket> tickets = new HashSet<>();
 
-    // ---- Public methods ----
+    // ---- Constructors ----
 
     public Tag(String name) {
         if (name == null || name.isBlank()) throw new IllegalArgumentException("Tag name must not be blank");
         this.name = name;
     }
+
+    // ---- Domain methods ----
 
     public Set<Ticket> getTickets() {
         return java.util.Collections.unmodifiableSet(tickets);

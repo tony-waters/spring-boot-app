@@ -44,11 +44,13 @@ public class Customer extends BaseEntity {
     // ---- Constructors ----
 
     public Customer(String lastName, String firstName) {
+        if(lastName == null || lastName.isBlank()) throw new IllegalArgumentException("lastName must have a value");
+        if(firstName == null || firstName.isBlank()) throw new IllegalArgumentException("firstName must have a value");
         this.lastName= lastName;
         this.firstName = firstName;
     }
 
-    // ---- Public methods ----
+    // ---- Domain methods ----
 
     public Set<Ticket> getTickets() {
         // prevent external modification that could break relationships
