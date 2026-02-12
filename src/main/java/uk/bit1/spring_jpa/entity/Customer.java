@@ -26,7 +26,7 @@ public class Customer extends BaseEntity {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private Set<Order> orders = new HashSet<>();
+    private Set<Ticket> tickets = new HashSet<>();
 
     @Getter
     @NotBlank
@@ -45,37 +45,37 @@ public class Customer extends BaseEntity {
         this.firstName = firstName;
     }
 
-    public Order createOrder(String description) {
-        Order order = new Order(description);
-        addOrderInternal(order);
-        return order;
+    public Ticket createTicket(String description) {
+        Ticket ticket = new Ticket(description);
+        addTicketInternal(ticket);
+        return ticket;
     }
 
-    private void addOrderInternal(Order order) {
-        if (order == null) throw new IllegalArgumentException("Order must not be null");
-        if (order.getCustomer() != null && order.getCustomer() != this) {
-            throw new IllegalStateException("Cannot move Order between Customers");
+    private void addTicketInternal(Ticket ticket) {
+        if (ticket == null) throw new IllegalArgumentException("Ticket must not be null");
+        if (ticket.getCustomer() != null && ticket.getCustomer() != this) {
+            throw new IllegalStateException("Cannot move Ticket between Customers");
         }
-        order.setCustomerInternal(this); // safe even if already set
-        orders.add(order);
+        ticket.setCustomerInternal(this); // safe even if already set
+        tickets.add(ticket);
     }
 
-    public void removeOrderAndDelete(Order order) {
-        if (order == null) return;
-        if (order.getCustomer() != this) {
-            throw new IllegalArgumentException("Order does not belong to this customer");
+    public void removeTicketAndDelete(Ticket ticket) {
+        if (ticket == null) return;
+        if (ticket.getCustomer() != this) {
+            throw new IllegalArgumentException("Ticket does not belong to this Customer");
         }
-        boolean removed = orders.remove(order);
+        boolean removed = tickets.remove(ticket);
         if (!removed) {
-            throw new IllegalStateException("Order was not in Customer.orders (detached instance?)");
+            throw new IllegalStateException("Ticket was not in Customer.tickets (detached instance?)");
         }
         // orphanRemoval will delete on flush
     }
 
-    public void deleteAllOrders() {
+    public void deleteAllTickets() {
         // Iterating over a copy avoids ConcurrentModificationException
-        for (Order order : new HashSet<>(orders)) {
-            removeOrderAndDelete(order);
+        for (Ticket ticket : new HashSet<>(tickets)) {
+            removeTicketAndDelete(ticket);
         }
     }
 
@@ -93,8 +93,8 @@ public class Customer extends BaseEntity {
 //        }
 //    }
 
-    public Set<Order> getOrders() {
-        return java.util.Collections.unmodifiableSet(orders);
+    public Set<Ticket> getTickets() {
+        return java.util.Collections.unmodifiableSet(tickets);
     }
 
     // no setOrders by design
