@@ -13,16 +13,17 @@ import java.util.Set;
 @Entity
 @Table(
         name = "support_ticket",
-        indexes = @Index(name = "idx_support_ticket_customer_id", columnList = "customer_id")
+        indexes = @Index(name = "idx_ticket_customer_id", columnList = "customer_id")
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Ticket extends BaseEntity {
 
-    @Getter
+    @Getter // no setter by design
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
+    // getter below, no setter by design
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "ticket_tag",
@@ -31,13 +32,13 @@ public class Ticket extends BaseEntity {
     )
     private Set<Tag> tags = new HashSet<>();
 
-    @Getter
+    @Getter // no setter by design
     @NotBlank
     @Size(min = 2, max = 255)
     @Column(nullable = false, length = 255)
     private String description;
 
-    @Getter
+    @Getter // no setter by design
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private TicketStatus status;
@@ -46,6 +47,12 @@ public class Ticket extends BaseEntity {
         if (description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be empty");
         this.description = description;
         this.status = TicketStatus.OPEN;
+    }
+
+    public Set<Tag> getTags() {
+        // stop modification via the Collection interface
+        // breaks symmetry (Tag.tickets not updated)
+        return java.util.Collections.unmodifiableSet(tags);
     }
 
     public void addTag(Tag tag) {
@@ -75,14 +82,6 @@ public class Ticket extends BaseEntity {
         }
         this.customer = customer;
     }
-
-    public Set<Tag> getTags() {
-        // stop modification via the Collection interface
-        // breaks symmetry (Tag.tickets not updated)
-        return java.util.Collections.unmodifiableSet(tags);
-    }
-
-    // no setProducts by design
 
     @Override
     public String toString() {

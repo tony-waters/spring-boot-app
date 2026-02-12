@@ -1,6 +1,7 @@
 package uk.bit1.spring_jpa.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -8,13 +9,15 @@ import java.util.Set;
 @Entity
 @Table(
         name = "tag",
-        uniqueConstraints = @UniqueConstraint(name = "uk_tag_name", columnNames = "name")
+        uniqueConstraints = @UniqueConstraint(name = "uc_tag_name", columnNames = "name")
 )
 public class Tag extends BaseEntity {
 
+    @Getter // no setter by design
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
+    // getter below, no setter by design
     @ManyToMany(mappedBy = "tags")
     private Set<Ticket> tickets = new HashSet<>();
 
@@ -24,8 +27,6 @@ public class Tag extends BaseEntity {
         if (name == null || name.isBlank()) throw new IllegalArgumentException("Tag name must not be blank");
         this.name = name;
     }
-
-    public String getName() { return name; }
 
     public Set<Ticket> getTickets() {
         return java.util.Collections.unmodifiableSet(tickets);

@@ -20,6 +20,7 @@ public class Customer extends BaseEntity {
 //    )
 //    private ContactInfo contactInfo;
 
+    // getter below, no setter by design
     @OneToMany(
             mappedBy = "customer",
             cascade = CascadeType.ALL,
@@ -28,13 +29,13 @@ public class Customer extends BaseEntity {
     )
     private Set<Ticket> tickets = new HashSet<>();
 
-    @Getter
+    @Getter // no setter by design
     @NotBlank
     @Size(min = 2, max = 50)
     @Column(name = "last_name", length = 50, nullable = false)
     private String lastName;
 
-    @Getter
+    @Getter // no setter by design
     @NotBlank
     @Size(min = 2, max = 50)
     @Column(name = "first_name", length = 50, nullable = false)
@@ -79,10 +80,16 @@ public class Customer extends BaseEntity {
         }
     }
 
+    public Set<Ticket> getTickets() {
+        return java.util.Collections.unmodifiableSet(tickets);
+    }
+
+    // no setTickets() by design
+
 //    public ContactInfo getContactInfo() {
 //        return contactInfo;
-//    }
 
+//    }
 //    public void setContactInfo(ContactInfo contactInfo) {
 //        if (this.contactInfo != null) {
 //            this.contactInfo.setCustomer(null);
@@ -93,11 +100,7 @@ public class Customer extends BaseEntity {
 //        }
 //    }
 
-    public Set<Ticket> getTickets() {
-        return java.util.Collections.unmodifiableSet(tickets);
-    }
 
-    // no setOrders by design
 
     @Override
     public String toString() {
