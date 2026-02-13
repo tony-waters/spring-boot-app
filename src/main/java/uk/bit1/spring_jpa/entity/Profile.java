@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "customer_profile")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Profile {
+public class Profile extends BaseEntity {
 
     @Id
     @Getter  // no setter by design
@@ -30,7 +30,7 @@ public class Profile {
 
     // ---- Constructors ----
 
-    public Profile(String displayName, boolean marketingOptIn) {
+    Profile(String displayName, boolean marketingOptIn) {
         if(displayName == null || displayName.isBlank()) throw new IllegalArgumentException("Display name must not be blank");
         this.displayName = displayName;
         this.marketingOptIn = marketingOptIn;
@@ -43,6 +43,10 @@ public class Profile {
         this.displayName = newDisplayName;
     }
 
+    public void optInToMarketing() { this.marketingOptIn = true; }
+
+    public void optOutOfMarketing() { this.marketingOptIn = false; }
+
     // ---- Internal helper methods ----
 
     void setCustomerInternal(Customer customer) {
@@ -53,8 +57,8 @@ public class Profile {
         this.customer = customer;
     }
 
-    void clearCustomerInternal() {
-        this.customer = null;
-    }
+//    void clearCustomerInternal() {
+//        this.customer = null;
+//    }
 }
 

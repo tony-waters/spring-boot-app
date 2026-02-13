@@ -2,6 +2,7 @@ package uk.bit1.spring_jpa.entity;
 
 import jakarta.persistence.*;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -19,7 +20,7 @@ public class Customer extends BaseEntity {
     @Getter  // no setter by design
     private Long id;
 
-    @Getter  // no setter by design
+    // getter below, no setter by design
     @OneToOne(
             mappedBy = "customer",
             fetch = FetchType.LAZY,
@@ -61,18 +62,32 @@ public class Customer extends BaseEntity {
 
     // ---- Domain methods ----
 
-    public void createProfile(Profile profile) {
-        if (profile == null) throw new IllegalArgumentException("profile must not be null");
+    public Optional<Profile> getProfile() {
+        return Optional.ofNullable(profile);
+    }
+
+    public void createProfile(String displayName, boolean marketingOptIn) {
+        if (displayName == null || displayName.isBlank()) throw new IllegalArgumentException("Display name must not be null");
         if (this.profile != null) throw new IllegalStateException("Customer already has a Profile");
+        Profile profile = new Profile(displayName, marketingOptIn);
         this.profile = profile;
         profile.setCustomerInternal(this);
     }
 
+    public void changeProfileDisplayName(String newDisplayName) {
+        requireProfile().changeDisplayName(newDisplayName);
+    }
+
+    public void setProfileMarketingOptIn(boolean optIn) {
+        if (optIn) {
+            requireProfile().optInToMarketing();
+        }
+        requireProfile().optOutOfMarketing();
+    }
+
     public void deleteProfile() {
         if (this.profile == null) return;
-        Profile old = this.profile;
         this.profile = null;
-        old.clearCustomerInternal(); // not strictly required, but keeps the in-memory graph honest
     }
 
     public Set<Ticket> getTickets() {
@@ -113,6 +128,11 @@ public class Customer extends BaseEntity {
 
     // ---- Internal helper methods ----
 
+    private Profile requireProfile() {
+        if (this.profile == null) throw new IllegalStateException("Customer does not have a Profile");
+        return this.profile;
+    }
+
     private void addTicketInternal(Ticket ticket) {
         if (ticket == null) throw new IllegalArgumentException("Ticket must not be null");
 
@@ -126,20 +146,6 @@ public class Customer extends BaseEntity {
         ticket.setCustomerInternal(this); // safe even if already set
         tickets.add(ticket);
     }
-
-//    public ContactInfo getContactInfo() {
-//        return contactInfo;
-
-//    }
-//    public void setContactInfo(ContactInfo contactInfo) {
-//        if (this.contactInfo != null) {
-//            this.contactInfo.setCustomer(null);
-//        }
-//        this.contactInfo = contactInfo;
-//        if (contactInfo != null) {
-//            contactInfo.setCustomer(this);
-//        }
-//    }
 
     // ---- General ----
 
