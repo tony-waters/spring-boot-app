@@ -23,6 +23,7 @@ public class Customer extends BaseEntity {
     // getter below, no setter by design
     @OneToOne(
             mappedBy = "customer",
+            // TODO: this is redundant?
             fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
             orphanRemoval = true,

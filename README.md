@@ -34,6 +34,18 @@ So its not really a @ManyToMany relationship.
 
 ## testing
 
+Yes, test entities — but only where they contain rules
+
+No, don’t test annotations
+
+Yes, test services a lot
+
+Yes, test repositories where you depend on behavior
+
+Yes, test controllers for contracts
+
+Keep E2E tests few and meaningful
+
 What I’ll cover (and only what’s worth covering for entities):
 
 Bidirectional consistency
