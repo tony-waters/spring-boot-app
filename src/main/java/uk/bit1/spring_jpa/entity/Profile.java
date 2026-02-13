@@ -1,6 +1,8 @@
 package uk.bit1.spring_jpa.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +23,8 @@ public class Profile extends BaseEntity {
     private Customer customer;
 
     @Getter  // no setter by design
+    @NotBlank
+    @Size(min = 2, max = 80)
     @Column(name = "display_name", length = 80, nullable = false, unique = true)
     private String displayName;
 
@@ -57,8 +61,8 @@ public class Profile extends BaseEntity {
         this.customer = customer;
     }
 
-//    void clearCustomerInternal() {
-//        this.customer = null;
-//    }
+    void clearCustomerInternal() {
+        this.customer = null;
+    }
 }
 

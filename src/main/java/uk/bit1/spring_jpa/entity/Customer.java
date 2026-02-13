@@ -81,13 +81,16 @@ public class Customer extends BaseEntity {
     public void setProfileMarketingOptIn(boolean optIn) {
         if (optIn) {
             requireProfile().optInToMarketing();
+        } else {
+            requireProfile().optOutOfMarketing();
         }
-        requireProfile().optOutOfMarketing();
     }
 
     public void deleteProfile() {
         if (this.profile == null) return;
+        Profile old = this.profile;
         this.profile = null;
+        old.clearCustomerInternal();
     }
 
     public Set<Ticket> getTickets() {

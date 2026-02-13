@@ -1,4 +1,4 @@
-package uk.bit1.spring_jpa.repository.projection;
+package repository.projection;
 
 public interface OrderWithProductCount {
     Long getOrderId();
