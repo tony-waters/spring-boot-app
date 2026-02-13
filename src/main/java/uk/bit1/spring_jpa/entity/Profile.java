@@ -43,11 +43,12 @@ public class Profile extends BaseEntity {
     // ---- Domain methods ----
 
     public void changeDisplayName(String newDisplayName) {
+        if(this.displayName.equals(newDisplayName)) return; // may want to throw an error here
         if(newDisplayName == null || newDisplayName.isBlank()) throw new IllegalArgumentException("Display name must not be blank");
         this.displayName = newDisplayName;
     }
 
-    public void updateMarketingOptIn(boolean optIn) { this.marketingOptIn = optIn; }
+    public void updateMarketingOptIn(boolean newMarketingOptIn) { this.marketingOptIn = newMarketingOptIn; }
 
     // ---- Internal helper methods ----
 
