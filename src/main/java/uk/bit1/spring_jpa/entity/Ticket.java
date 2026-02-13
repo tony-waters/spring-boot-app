@@ -18,6 +18,12 @@ import java.util.Set;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Ticket extends BaseEntity {
 
+    @Id
+    @SequenceGenerator(name="global_seq", sequenceName="global_seq", allocationSize=50)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="global_seq")
+    @Getter  // no setter by design
+    private Long id;
+
     @Getter // no setter by design
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)

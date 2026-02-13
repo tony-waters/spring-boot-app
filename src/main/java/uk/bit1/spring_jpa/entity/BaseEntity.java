@@ -3,17 +3,12 @@ package uk.bit1.spring_jpa.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.EmbeddedColumnNaming;
 
 import java.time.Instant;
 
 @MappedSuperclass
 public abstract class BaseEntity {
-
-    @Id
-    @SequenceGenerator(name="global_seq", sequenceName="global_seq", allocationSize=50)
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="global_seq")
-    @Getter  // no setter by design
-    private Long id;
 
     // Optimistic locking
     @Getter  // no setter by design
@@ -44,7 +39,7 @@ public abstract class BaseEntity {
 
     // ---- equals() and hashCode() ----
 
-//    public abstract Long getId();
+    public abstract Long getId();
 
     // override equals() and hashCode() to compare DB id
     // ... needs to be 'proxy safe'

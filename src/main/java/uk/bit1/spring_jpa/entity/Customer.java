@@ -13,12 +13,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Customer extends BaseEntity {
 
-//    @OneToOne(
-//            mappedBy = "customer",
-//            cascade = CascadeType.ALL,
-//            orphanRemoval = true
-//    )
-//    private ContactInfo contactInfo;
+    @Id
+    @SequenceGenerator(name="global_seq", sequenceName="global_seq", allocationSize=50)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="global_seq")
+    @Getter  // no setter by design
+    private Long id;
+
+    @Getter  // no setter by design
+    @OneToOne(
+            mappedBy = "customer",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            optional = true
+    )
+    private Profile profile;
 
     // getter below, no setter by design
     @OneToMany(
@@ -51,6 +60,20 @@ public class Customer extends BaseEntity {
     }
 
     // ---- Domain methods ----
+
+    public void createProfile(Profile profile) {
+        if (profile == null) throw new IllegalArgumentException("profile must not be null");
+        if (this.profile != null) throw new IllegalStateException("Customer already has a Profile");
+        this.profile = profile;
+        profile.setCustomerInternal(this);
+    }
+
+    public void deleteProfile() {
+        if (this.profile == null) return;
+        Profile old = this.profile;
+        this.profile = null;
+        old.clearCustomerInternal(); // not strictly required, but keeps the in-memory graph honest
+    }
 
     public Set<Ticket> getTickets() {
         // prevent external modification that could break relationships
