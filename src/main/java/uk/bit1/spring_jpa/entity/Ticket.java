@@ -64,11 +64,15 @@ public class Ticket extends BaseEntity {
         return java.util.Collections.unmodifiableSet(tags);
     }
 
+    //
     // ---- Domain logic - Maintain relationship invariants: Ticket -> Customer ----
+    //
 
     // (Handled by Customer entity)
 
+    //
     // ---- Domain logic - Maintain relationship invariants: Ticket -> Tag ----
+    //
 
     public void addTag(Tag tag) {
         if (tag == null) return;
@@ -89,20 +93,44 @@ public class Ticket extends BaseEntity {
         }
     }
 
+    //
     // ---- Domain logic - Maintain state transition invariants ----
+    //
 
-    public void updateTicket(TicketStatus newStatus, String newDescription) {
-        if(newStatus == null) throw new IllegalArgumentException("New status must not be null");
+    public void updateTicket(String newDescription) {
         if(newDescription == null || newDescription.isBlank()) throw new IllegalArgumentException("Description must not be empty");
-        this.status = newStatus;
         this.description = newDescription;
     }
 
+    public void resolveTicket() {
+        if(isClosed()) {
+            throw new IllegalStateException("Cannot Resolve a closed Ticket");
+        }
+        if(isNew()) {
+            throw new IllegalArgumentException("Cannot Resolve a new Ticket, must be in open or in-progress state");
+        }
+        this.status = TicketStatus.RESOLVED;
+    }
+
     public void closeTicket() {
+        if(isClosed()) {
+            throw new IllegalStateException("Ticket is already closed");
+        }
+        if(isNew()) {
+            throw new IllegalArgumentException("Ticket cannot be closed when new");
+        }
         this.status = TicketStatus.CLOSED;
     }
 
     // ---- Internal helper methods ----
+
+    private boolean isClosed() {
+        return this.status == TicketStatus.CLOSED;
+    }
+
+    private boolean isNew() {
+        return this.status == TicketStatus.NEW;
+    }
 
     void setCustomerInternal(Customer customer) {
         if (customer == null) throw new IllegalArgumentException("Ticket must have a Customer");

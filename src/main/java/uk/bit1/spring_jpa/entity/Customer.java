@@ -112,6 +112,12 @@ public class Customer extends BaseEntity {
 
     // ---- Domain logic - Maintain state transition invariants ----
 
+    public void updateCustomer(String firstName, String lastName) {
+        if(firstName == null || firstName.isBlank()) throw new IllegalArgumentException("firstName must have a value");
+        if (lastName == null || lastName.isBlank()) throw new IllegalArgumentException("lastName must have a value");
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
 
     // ---- Internal helper methods ----
 
