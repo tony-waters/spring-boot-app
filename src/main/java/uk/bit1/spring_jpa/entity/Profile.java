@@ -40,7 +40,9 @@ public class Profile extends BaseEntity {
         this.marketingOptIn = marketingOptIn;
     }
 
-    // ---- Domain methods ----
+    // ---- Domain logic ----
+
+    // TODO: why not just use updateProfile()?
 
     public void changeDisplayName(String newDisplayName) {
         if(this.displayName.equals(newDisplayName)) return; // may want to throw an error here

@@ -61,11 +61,18 @@ public class Customer extends BaseEntity {
         this.firstName = firstName;
     }
 
-    // ---- Domain methods ----
+    // ---- Getters ----
 
     public Optional<Profile> getProfile() {
         return Optional.ofNullable(profile);
     }
+
+    public Set<Ticket> getTickets() {
+        // prevent external modification that could break relationships
+        return java.util.Collections.unmodifiableSet(tickets);
+    }
+
+    // ---- Domain logic : Profile ----
 
     public void createProfile(String displayName, boolean marketingOptIn) {
         if (displayName == null || displayName.isBlank()) throw new IllegalArgumentException("Display name must not be null");
@@ -90,10 +97,7 @@ public class Customer extends BaseEntity {
         old.clearCustomerInternal();
     }
 
-    public Set<Ticket> getTickets() {
-        // prevent external modification that could break relationships
-        return java.util.Collections.unmodifiableSet(tickets);
-    }
+    // ---- Domain logic : Ticket ----
 
     public Ticket createTicket(String description) {
         Ticket ticket = new Ticket(description);
@@ -101,22 +105,8 @@ public class Customer extends BaseEntity {
         return ticket;
     }
 
-    public void removeTicketAndDelete(Ticket ticket) {
-        if (ticket == null) return;
-
-        // Object comparison like "ticket.getCustomer() != this" will not work properly
-        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
-        // ... need to ensure use of 'equals()' method '!this.equals(customer)'
-        Customer customer = ticket.getCustomer();
-        if (!this.equals(customer)) {
-            throw new IllegalArgumentException("Ticket does not belong to this Customer");
-        }
-        boolean removed = tickets.remove(ticket);
-        if (!removed) {
-            throw new IllegalStateException("Ticket was not in Customer.tickets (detached instance?)");
-        }
-        // we do not null Ticket.customer as 'nullable = false'
-        // orphanRemoval will delete on flush
+    public void deleteTicket(Ticket ticket) {
+        removeTicketAndDelete(ticket);
     }
 
     public void deleteAllTickets() {
@@ -145,6 +135,25 @@ public class Customer extends BaseEntity {
         }
         ticket.setCustomerInternal(this); // safe even if already set
         tickets.add(ticket);
+    }
+
+    private void removeTicketAndDelete(Ticket ticket) {
+        if (ticket == null) return;
+
+        // Object comparison like "ticket.getCustomer() != this" will not work properly
+        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
+        // ... need to ensure use of 'equals()' method '!this.equals(customer)'
+        Customer customer = ticket.getCustomer();
+        if (!this.equals(customer)) {
+            throw new IllegalArgumentException("Ticket does not belong to this Customer");
+        }
+        boolean removed = tickets.remove(ticket);
+        if (!removed) {
+            throw new IllegalStateException("Ticket was not in Customer.tickets (detached instance?)");
+        }
+        // we do not null Ticket.customer as 'nullable = false'
+        // orphanRemoval will delete on flush
+        // ... will (should) be run within a @Transactional context in the Service layer
     }
 
     // ---- General ----

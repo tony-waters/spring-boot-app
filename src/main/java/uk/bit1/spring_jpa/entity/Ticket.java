@@ -57,7 +57,14 @@ public class Ticket extends BaseEntity {
         this.status = TicketStatus.OPEN;
     }
 
-    // ---- Domain methods ----
+    // ---- Getters ----
+
+    public Set<Tag> getTags() {
+        // prevent external modification that could break relationships
+        return java.util.Collections.unmodifiableSet(tags);
+    }
+
+    // ---- Domain logic ----
 
     public void updateTicket(TicketStatus newStatus, String newDescription) {
         if(newStatus == null) throw new IllegalArgumentException("New status must not be null");
@@ -66,9 +73,8 @@ public class Ticket extends BaseEntity {
         this.description = newDescription;
     }
 
-    public Set<Tag> getTags() {
-        // prevent external modification that could break relationships
-        return java.util.Collections.unmodifiableSet(tags);
+    public void closeTicket() {
+        this.status = TicketStatus.CLOSED;
     }
 
     public void addTag(Tag tag) {

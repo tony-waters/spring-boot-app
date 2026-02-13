@@ -37,15 +37,19 @@ public class Tag extends BaseEntity {
         this.name = name;
     }
 
-    // ---- Domain methods ----
+    // ---- Getters ----
 
-    public Set<Ticket> getTickets() {
-        return java.util.Collections.unmodifiableSet(tickets);
-    }
+//    // TODO: this could be enormous!
+//    public Set<Ticket> getTickets() {
+//        return java.util.Collections.unmodifiableSet(tickets);
+//    }
+
+    // ---- Domain logic ----
 
     // ---- Internal helper methods ----
 
     void addTicketInternal(Ticket ticket) {
+        if(ticket == null) throw new IllegalArgumentException("Ticket must not be null");
         tickets.add(ticket);
     }
 
