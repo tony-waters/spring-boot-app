@@ -64,18 +64,11 @@ public class Ticket extends BaseEntity {
         return java.util.Collections.unmodifiableSet(tags);
     }
 
-    // ---- Domain logic ----
+    // ---- Domain logic - Maintain relationship invariants: Ticket -> Customer ----
 
-    public void updateTicket(TicketStatus newStatus, String newDescription) {
-        if(newStatus == null) throw new IllegalArgumentException("New status must not be null");
-        if(newDescription == null || newDescription.isBlank()) throw new IllegalArgumentException("Description must not be empty");
-        this.status = newStatus;
-        this.description = newDescription;
-    }
+    // (Handled by Customer entity)
 
-    public void closeTicket() {
-        this.status = TicketStatus.CLOSED;
-    }
+    // ---- Domain logic - Maintain relationship invariants: Ticket -> Tag ----
 
     public void addTag(Tag tag) {
         if (tag == null) return;
@@ -94,6 +87,19 @@ public class Ticket extends BaseEntity {
         for (Tag tag : new HashSet<>(tags)) {
             removeTag(tag);
         }
+    }
+
+    // ---- Domain logic - Maintain state transition invariants ----
+
+    public void updateTicket(TicketStatus newStatus, String newDescription) {
+        if(newStatus == null) throw new IllegalArgumentException("New status must not be null");
+        if(newDescription == null || newDescription.isBlank()) throw new IllegalArgumentException("Description must not be empty");
+        this.status = newStatus;
+        this.description = newDescription;
+    }
+
+    public void closeTicket() {
+        this.status = TicketStatus.CLOSED;
     }
 
     // ---- Internal helper methods ----

@@ -44,7 +44,9 @@ public class Tag extends BaseEntity {
 //        return java.util.Collections.unmodifiableSet(tickets);
 //    }
 
-    // ---- Domain logic ----
+    // ---- Domain logic - Relationship invariants: Tag -> Ticket ----
+
+    // (Handled by Ticket entity)
 
     // ---- Internal helper methods ----
 

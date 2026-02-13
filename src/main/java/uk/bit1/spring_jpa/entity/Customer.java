@@ -72,22 +72,15 @@ public class Customer extends BaseEntity {
         return java.util.Collections.unmodifiableSet(tickets);
     }
 
-    // ---- Domain logic : Profile ----
+    // ---- Domain logic - Maintain relationship invariants: Customer -> Profile ----
 
+    // Customer has control of Customer-Profile relationship changes (despite Profile being the Owner side)
     public void createProfile(String displayName, boolean marketingOptIn) {
         if (displayName == null || displayName.isBlank()) throw new IllegalArgumentException("Display name must not be null");
         if (this.profile != null) throw new IllegalStateException("Customer already has a Profile");
         Profile profile = new Profile(displayName, marketingOptIn);
         this.profile = profile;
         profile.setCustomerInternal(this);
-    }
-
-    public void changeProfileDisplayName(String newDisplayName) {
-        requireProfile().changeDisplayName(newDisplayName);
-    }
-
-    public void setProfileMarketingOptIn(boolean optIn) {
-        requireProfile().updateMarketingOptIn(optIn);
     }
 
     public void deleteProfile() {
@@ -97,8 +90,9 @@ public class Customer extends BaseEntity {
         old.clearCustomerInternal();
     }
 
-    // ---- Domain logic : Ticket ----
+    // ---- Domain logic - Relationship invariants: Customer -> Ticket ----
 
+    // Customer has control of Customer-Ticket relationship changes (despite Ticket being the Owner side)
     public Ticket createTicket(String description) {
         Ticket ticket = new Ticket(description);
         addTicketInternal(ticket);
@@ -115,6 +109,9 @@ public class Customer extends BaseEntity {
             removeTicketAndDelete(ticket);
         }
     }
+
+    // ---- Domain logic - Maintain state transition invariants ----
+
 
     // ---- Internal helper methods ----
 
