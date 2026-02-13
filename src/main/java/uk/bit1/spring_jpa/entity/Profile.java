@@ -47,9 +47,7 @@ public class Profile extends BaseEntity {
         this.displayName = newDisplayName;
     }
 
-    public void optInToMarketing() { this.marketingOptIn = true; }
-
-    public void optOutOfMarketing() { this.marketingOptIn = false; }
+    public void updateMarketingOptIn(boolean optIn) { this.marketingOptIn = optIn; }
 
     // ---- Internal helper methods ----
 
