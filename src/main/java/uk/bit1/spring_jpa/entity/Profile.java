@@ -40,6 +40,8 @@ public class Profile extends BaseEntity {
         this.marketingOptIn = marketingOptIn;
     }
 
+    // ---- Getters ----
+
     // ---- Domain logic - Maintain relationship invariants: Profile -> Customer ----
 
         // (Handled by Customer entity)
