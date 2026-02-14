@@ -24,6 +24,7 @@ public class Ticket extends BaseEntity {
     @Getter  // no setter by design
     private Long id;
 
+    // TODO: should 'customer' have a public getter?
     @Getter // no setter by design
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
@@ -64,22 +65,21 @@ public class Ticket extends BaseEntity {
         return java.util.Collections.unmodifiableSet(tags);
     }
 
-    //
-    // ---- Domain logic - Maintain relationship invariants: Ticket -> Customer ----
-    //
+    // ---- Domain logic - Maintain relationship invariants for Ticket -> Customer ----
 
-    // (Handled by Customer entity)
+        // (Handled by Customer entity)
 
-    //
-    // ---- Domain logic - Maintain relationship invariants: Ticket -> Tag ----
-    //
+    // ---- Domain logic - Maintain relationship invariants for Ticket -> Tag ----
 
+    // TODO: check unique
     public void addTag(Tag tag) {
         if (tag == null) return;
         if (tags.add(tag)) {
             tag.addTicketInternal(this);
         }
     }
+
+    // TODO: check exists
     public void removeTag(Tag tag) {
         if (tag == null) return;
         if (tags.remove(tag)) {
@@ -93,9 +93,7 @@ public class Ticket extends BaseEntity {
         }
     }
 
-    //
-    // ---- Domain logic - Maintain state transition invariants ----
-    //
+    // ---- Domain logic - Maintain local state transition invariants ----
 
     public void updateTicket(String newDescription) {
         if(newDescription == null || newDescription.isBlank()) throw new IllegalArgumentException("Description must not be empty");

@@ -39,14 +39,18 @@ public class Tag extends BaseEntity {
 
     // ---- Getters ----
 
-//    // TODO: this could be enormous!
+//    // TODO: this could be enormous - use Repository
 //    public Set<Ticket> getTickets() {
 //        return java.util.Collections.unmodifiableSet(tickets);
 //    }
 
-    // ---- Domain logic - Relationship invariants: Tag -> Ticket ----
+    // ---- Domain logic - Maintain relationship invariants for Tag -> Ticket ----
 
-    // (Handled by Ticket entity)
+        // (Handled by Ticket entity)
+
+    // ---- Domain logic - Maintain local state transition invariants ----
+
+        // TODO: handle local state transition
 
     // ---- Internal helper methods ----
 

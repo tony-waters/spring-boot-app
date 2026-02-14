@@ -63,16 +63,18 @@ public class Customer extends BaseEntity {
 
     // ---- Getters ----
 
+    // TODO: do we need public getters? Does this need to be Optional? or get rid of?
     public Optional<Profile> getProfile() {
         return Optional.ofNullable(profile);
     }
 
+    // TODO: what if there are 100s of Tickets? Leave this to Repositories?
     public Set<Ticket> getTickets() {
         // prevent external modification that could break relationships
         return java.util.Collections.unmodifiableSet(tickets);
     }
 
-    // ---- Domain logic - Maintain relationship invariants: Customer -> Profile ----
+    // ---- Domain logic - Maintain relationship invariants for Customer -> Profile ----
 
     // Customer has control of Customer-Profile relationship changes (despite Profile being the Owner side)
     public void createProfile(String displayName, boolean marketingOptIn) {
@@ -90,7 +92,7 @@ public class Customer extends BaseEntity {
         old.clearCustomerInternal();
     }
 
-    // ---- Domain logic - Relationship invariants: Customer -> Ticket ----
+    // ---- Domain logic - Maintain relationship invariants for Customer -> Ticket ----
 
     // Customer has control of Customer-Ticket relationship changes (despite Ticket being the Owner side)
     public Ticket createTicket(String description) {
@@ -110,7 +112,7 @@ public class Customer extends BaseEntity {
         }
     }
 
-    // ---- Domain logic - Maintain state transition invariants ----
+    // ---- Domain logic - Maintain local state transition invariants ----
 
     public void updateCustomer(String firstName, String lastName) {
         if(firstName == null || firstName.isBlank()) throw new IllegalArgumentException("firstName must have a value");

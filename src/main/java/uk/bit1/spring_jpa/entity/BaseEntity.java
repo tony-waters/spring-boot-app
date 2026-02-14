@@ -3,7 +3,6 @@ package uk.bit1.spring_jpa.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.EmbeddedColumnNaming;
 
 import java.time.Instant;
 

@@ -42,24 +42,13 @@ public class Profile extends BaseEntity {
 
     // ---- Domain logic - Maintain relationship invariants: Profile -> Customer ----
 
-    // (handled by Customer entity)
+        // (Handled by Customer entity)
 
     // ---- Domain logic - Maintain state transition invariants ----
 
-    // TODO: should these be in the Profile entity?
-
-//    public void changeProfileDisplayName(String newDisplayName) {
-//        requireProfile().changeDisplayName(newDisplayName);
-//    }
-
-//    public void setProfileMarketingOptIn(boolean optIn) {
-//        requireProfile().updateMarketingOptIn(optIn);
-//    }
-
     // TODO: why not just use updateProfile()?
-
     public void changeDisplayName(String newDisplayName) {
-        if(this.displayName.equals(newDisplayName)) return; // may want to throw an error here
+        if(this.displayName.equals(newDisplayName)) return; // throw an error here if we enforce 'change' in domain
         if(newDisplayName == null || newDisplayName.isBlank()) throw new IllegalArgumentException("Display name must not be blank");
         this.displayName = newDisplayName;
     }
