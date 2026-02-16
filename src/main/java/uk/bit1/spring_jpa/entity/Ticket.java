@@ -55,7 +55,7 @@ public class Ticket extends BaseEntity {
     Ticket(String description) {
         if (description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be empty");
         this.description = description;
-        this.status = TicketStatus.OPEN;
+        this.status = TicketStatus.NEW;
     }
 
     // ---- Getters ----
@@ -67,7 +67,19 @@ public class Ticket extends BaseEntity {
 
     // ---- Domain logic - Maintain relationship invariants for Ticket -> Customer ----
 
-        // (Handled by Customer entity)
+        // public access to relationship handled by Customer entity
+
+    void setCustomerInternal(Customer customer) {
+        if (customer == null) throw new IllegalArgumentException("Ticket must have a Customer");
+
+        // Object comparison like "this.customer != customer" will not work properly
+        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
+        // ... need to ensure use of 'equals()' method '!this.customer.equals(customer)'
+        if (this.customer != null && !this.customer.equals(customer)) {
+            throw new IllegalStateException("Ticket customer cannot be changed; delete and recreate instead");
+        }
+        this.customer = customer;
+    }
 
     // ---- Domain logic - Maintain relationship invariants for Ticket -> Tag ----
 
@@ -100,6 +112,29 @@ public class Ticket extends BaseEntity {
         this.description = newDescription;
     }
 
+    // TODO:
+    // 3) Ticket status logic: decent, but you’re missing transitions
+    //
+    //You have resolveTicket() and closeTicket(). But you can’t move from:
+    //
+    //NEW -> OPEN
+    //
+    //OPEN -> IN_PROGRESS
+    //
+    //RESOLVED -> CLOSED (maybe implicit)
+    //
+    //If you mean NEW is a thing, you need methods like:
+    //
+    //start() or open()
+    //
+    //beginWork()
+    //
+    //reopen() (if allowed)
+    //
+    //Otherwise “NEW” is pointless and will trap you in invalid states.
+    //
+    //Also: throw IllegalStateException for invalid transitions (not IllegalArgumentException). Invalid state is not invalid input.
+
     public void resolveTicket() {
         if(isClosed()) {
             throw new IllegalStateException("Cannot Resolve a closed Ticket");
@@ -130,17 +165,6 @@ public class Ticket extends BaseEntity {
         return this.status == TicketStatus.NEW;
     }
 
-    void setCustomerInternal(Customer customer) {
-        if (customer == null) throw new IllegalArgumentException("Ticket must have a Customer");
-
-        // Object comparison like "this.customer != customer" will not work properly
-        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
-        // ... need to ensure use of 'equals()' method '!this.customer.equals(customer)'
-        if (this.customer != null && !this.customer.equals(customer)) {
-            throw new IllegalStateException("Ticket customer cannot be changed; delete and recreate instead");
-        }
-        this.customer = customer;
-    }
 
     // ---- General ----
 

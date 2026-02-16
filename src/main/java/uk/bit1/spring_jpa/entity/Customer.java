@@ -1,14 +1,14 @@
 package uk.bit1.spring_jpa.entity;
 
 import jakarta.persistence.*;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -20,7 +20,7 @@ public class Customer extends BaseEntity {
     @Getter  // no setter by design
     private Long id;
 
-    // getter below, no setter by design
+    @Getter // no setter by design
     @OneToOne(
             mappedBy = "customer",
             // TODO: this is redundant?
@@ -63,16 +63,6 @@ public class Customer extends BaseEntity {
 
     // ---- Getters ----
 
-    // TODO: do we need public getters? Does this need to be Optional? or get rid of?
-//    public Optional<Profile> getProfile() {
-//        return Optional.ofNullable(profile);
-//    }
-
-    public Profile getProfile() {
-        if (this.profile == null) throw new IllegalStateException("Customer does not have a Profile");
-        return this.profile;
-    }
-
     // TODO: what if there are 100s of Tickets? Leave this to Repositories?
 //    public Set<Ticket> getTickets() {
 //        // prevent external modification that could break relationships
@@ -101,20 +91,51 @@ public class Customer extends BaseEntity {
 
     // Customer has control of Customer-Ticket relationship changes (despite Ticket being the Owner side)
     public Ticket createTicket(String description) {
+        if(description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be null");
         Ticket ticket = new Ticket(description);
         addTicketInternal(ticket);
         return ticket;
     }
 
     public void deleteTicket(Ticket ticket) {
-        removeTicketAndDelete(ticket);
+        if(ticket == null) throw new IllegalArgumentException("Ticket must not be null");
+        // Object comparison like "ticket.getCustomer() != this" will not work properly
+        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
+        // ... need to ensure use of 'equals()' method '!this.equals(customer)'
+        if (!this.equals(ticket.getCustomer())) {
+            throw new IllegalArgumentException("Ticket does not belong to this Customer");
+        }
+        removeTicketInternal(ticket);
     }
 
     public void deleteAllTickets() {
         // Iterating over a copy avoids ConcurrentModificationException
         for (Ticket ticket : new HashSet<>(tickets)) {
-            removeTicketAndDelete(ticket);
+            deleteTicket(ticket);
         }
+    }
+
+    private void addTicketInternal(Ticket ticket) {
+        Customer existing = ticket.getCustomer();
+        // Object comparison like "<Entity> != this" will not work properly
+        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
+        // ... need to ensure use of 'equals()' method '!this.equals(existing)'
+        if (existing != null && !this.equals(existing)) {
+            throw new IllegalStateException("Cannot move Ticket between Customers. Delete and replace instead");
+        }
+        ticket.setCustomerInternal(this); // safe even if already set
+        tickets.add(ticket);
+    }
+
+    private void removeTicketInternal(Ticket ticket) {
+        Customer customer = ticket.getCustomer();
+        boolean removed = tickets.remove(ticket);
+        if (!removed) {
+            throw new IllegalStateException("Ticket was not in Customer.tickets (detached instance?)");
+        }
+        // we do not null Ticket.customer as 'nullable = false'
+        // orphanRemoval will delete on flush
+        // ... will (should) be run within a @Transactional context in the Service layer
     }
 
     // ---- Domain logic - Maintain local state transition invariants ----
@@ -127,44 +148,6 @@ public class Customer extends BaseEntity {
     }
 
     // ---- Internal helper methods ----
-
-//    private Profile requireProfile() {
-//        if (this.profile == null) throw new IllegalStateException("Customer does not have a Profile");
-//        return this.profile;
-//    }
-
-    private void addTicketInternal(Ticket ticket) {
-        if (ticket == null) throw new IllegalArgumentException("Ticket must not be null");
-
-        // Object comparison like "<Entity> != this" will not work properly
-        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
-        // ... need to ensure use of 'equals()' method '!this.equals(existing)'
-        Customer existing = ticket.getCustomer();
-        if (existing != null && !this.equals(existing)) {
-            throw new IllegalStateException("Cannot move Ticket between Customers");
-        }
-        ticket.setCustomerInternal(this); // safe even if already set
-        tickets.add(ticket);
-    }
-
-    private void removeTicketAndDelete(Ticket ticket) {
-        if (ticket == null) return;
-
-        // Object comparison like "ticket.getCustomer() != this" will not work properly
-        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
-        // ... need to ensure use of 'equals()' method '!this.equals(customer)'
-        Customer customer = ticket.getCustomer();
-        if (!this.equals(customer)) {
-            throw new IllegalArgumentException("Ticket does not belong to this Customer");
-        }
-        boolean removed = tickets.remove(ticket);
-        if (!removed) {
-            throw new IllegalStateException("Ticket was not in Customer.tickets (detached instance?)");
-        }
-        // we do not null Ticket.customer as 'nullable = false'
-        // orphanRemoval will delete on flush
-        // ... will (should) be run within a @Transactional context in the Service layer
-    }
 
     // ---- General ----
 

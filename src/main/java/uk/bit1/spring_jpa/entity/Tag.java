@@ -46,13 +46,7 @@ public class Tag extends BaseEntity {
 
     // ---- Domain logic - Maintain relationship invariants for Tag -> Ticket ----
 
-        // (Handled by Ticket entity)
-
-    // ---- Domain logic - Maintain local state transition invariants ----
-
-        // TODO: handle local state transition
-
-    // ---- Internal helper methods ----
+        // public control of Tag -> Ticket handled by Ticket entity
 
     void addTicketInternal(Ticket ticket) {
         if(ticket == null) throw new IllegalArgumentException("Ticket must not be null");
@@ -62,5 +56,13 @@ public class Tag extends BaseEntity {
     void removeTicketInternal(Ticket ticket) {
         tickets.remove(ticket);
     }
+
+    // ---- Domain logic - Maintain local state transition invariants ----
+
+        // TODO: handle local state transition
+
+    // ---- Internal helper methods ----
+
+
 }
 
