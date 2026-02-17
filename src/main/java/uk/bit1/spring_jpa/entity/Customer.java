@@ -133,7 +133,7 @@ public class Customer extends BaseEntity {
         if (!removed) {
             throw new IllegalStateException("Ticket was not in Customer.tickets (detached instance?)");
         }
-        // we do not null Ticket.customer as 'nullable = false'
+        // we do not null Ticket.customer to preserve 'nullable = false' in the Domain model.
         // orphanRemoval will delete on flush
         // ... will (should) be run within a @Transactional context in the Service layer
     }
