@@ -35,11 +35,9 @@ public class Profile extends BaseEntity {
     // ---- Constructors ----
 
     Profile(String displayName, boolean marketingOptIn) {
-        if(displayName == null || displayName.isBlank()) throw new IllegalArgumentException("Display name must not be blank");
-        // TODO:
-        // check Sentence
-        // trim()
-        this.displayName = displayName;
+        if(displayName == null || displayName.isBlank())
+            throw new IllegalArgumentException("Display name must not be blank");
+        this.displayName = displayName.strip();
         this.marketingOptIn = marketingOptIn;
     }
 

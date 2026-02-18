@@ -87,10 +87,7 @@ public class Customer extends BaseEntity {
     // Customer has control of Customer-Ticket relationship changes (despite Ticket being the Owner side)
     public Ticket raiseTicket(String description) {
         if(description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be null");
-        // TODO:
-        // check Sentence
-        // trim()
-        Ticket ticket = new Ticket(description);
+        Ticket ticket = new Ticket(description.strip());
         addTicketInternal(ticket);
         return ticket;
     }

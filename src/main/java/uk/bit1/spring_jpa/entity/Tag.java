@@ -33,16 +33,15 @@ public class Tag extends BaseEntity {
     // ---- Constructors ----
 
     public Tag(String name) {
-        if (name == null || name.isBlank()) throw new IllegalArgumentException("Tag name must not be blank");
-        // TODO: trim, collapse spaces, lower-case?
-        this.name = name;
+        if (name == null || name.isBlank())
+            throw new IllegalArgumentException("Tag name must not be blank");
+        this.name = name.strip();
     }
 
     // ---- Tag -> Ticket relationship ----
     // (public control of relationship handled by Ticket entity)
 
     void addTicketInternal(Ticket ticket) {
-        if(ticket == null) throw new IllegalArgumentException("Ticket must not be null");
         tickets.add(ticket);
     }
 

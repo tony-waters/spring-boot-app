@@ -102,9 +102,10 @@ public class Ticket extends BaseEntity {
     // ---- State transition ----
 
     public void changeDescription(String description) {
-        if (description == null || description.isBlank())
-            throw new IllegalArgumentException("Description must not be blank");
         requireNotClosed("changeDescription");
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException("Description must not be blank");
+        }
         this.description = description;
     }
 
@@ -130,10 +131,7 @@ public class Ticket extends BaseEntity {
     }
 
     private void transitionTo(TicketStatus target, String action, TicketStatus... allowedFrom) {
-        // closed is final
-        if (status == TicketStatus.CLOSED)
-            throw new IllegalStateException("Cannot " + action + " when ticket is CLOSED");
-
+        requireNotClosed(action);
         for (TicketStatus s : allowedFrom) {
             if (status == s) {
                 status = target;
