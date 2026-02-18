@@ -31,7 +31,7 @@ public class Customer extends BaseEntity {
     )
     private Profile profile;
 
-    // getter below, no setter by design
+    // no public getter or setter for Collections by design
     @OneToMany(
             mappedBy = "customer",
             cascade = CascadeType.ALL,
@@ -80,7 +80,7 @@ public class Customer extends BaseEntity {
         profile.setCustomerInternal(this);
     }
 
-    public void deleteProfile() {
+    public void removeProfile() {
         if (this.profile == null) return;
         Profile old = this.profile;
         this.profile = null;
@@ -90,14 +90,16 @@ public class Customer extends BaseEntity {
     // ---- Domain logic - Maintain relationship invariants for Customer -> Ticket ----
 
     // Customer has control of Customer-Ticket relationship changes (despite Ticket being the Owner side)
-    public Ticket createTicket(String description) {
+    public Ticket raiseTicket(String description) {
         if(description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be null");
+        // check Sentence
+        // trim()
         Ticket ticket = new Ticket(description);
         addTicketInternal(ticket);
         return ticket;
     }
 
-    public void deleteTicket(Ticket ticket) {
+    public void removeTicket(Ticket ticket) {
         if(ticket == null) throw new IllegalArgumentException("Ticket must not be null");
         // Object comparison like "ticket.getCustomer() != this" will not work properly
         // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
@@ -108,10 +110,10 @@ public class Customer extends BaseEntity {
         removeTicketInternal(ticket);
     }
 
-    public void deleteAllTickets() {
+    public void removeAllTickets() {
         // Iterating over a copy avoids ConcurrentModificationException
         for (Ticket ticket : new HashSet<>(tickets)) {
-            deleteTicket(ticket);
+            removeTicket(ticket);
         }
     }
 
@@ -140,7 +142,7 @@ public class Customer extends BaseEntity {
 
     // ---- Domain logic - Maintain local state transition invariants ----
 
-    public void updateCustomer(String firstName, String lastName) {
+    public void changeName(String firstName, String lastName) {
         if(firstName == null || firstName.isBlank()) throw new IllegalArgumentException("firstName must have a value");
         if (lastName == null || lastName.isBlank()) throw new IllegalArgumentException("lastName must have a value");
         this.firstName = firstName;

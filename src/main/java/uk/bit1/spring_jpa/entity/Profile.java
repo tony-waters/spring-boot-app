@@ -44,20 +44,7 @@ public class Profile extends BaseEntity {
 
     // ---- Domain logic - Maintain relationship invariants: Profile -> Customer ----
 
-        // (Handled by Customer entity)
-
-    // ---- Domain logic - Maintain state transition invariants ----
-
-    // TODO: why not just use updateProfile()?
-    public void changeDisplayName(String newDisplayName) {
-        if(this.displayName.equals(newDisplayName)) return; // throw an error here if we enforce 'change' in domain
-        if(newDisplayName == null || newDisplayName.isBlank()) throw new IllegalArgumentException("Display name must not be blank");
-        this.displayName = newDisplayName;
-    }
-
-    public void updateMarketingOptIn(boolean newMarketingOptIn) { this.marketingOptIn = newMarketingOptIn; }
-
-    // ---- Internal helper methods ----
+        // public access to relationship handled by Customer entity
 
     void setCustomerInternal(Customer customer) {
         if (customer == null) throw new IllegalArgumentException("Profile must have a Customer");
@@ -70,5 +57,26 @@ public class Profile extends BaseEntity {
     void clearCustomerInternal() {
         this.customer = null;
     }
+
+    // ---- Domain logic - Maintain state transition invariants ----
+
+    public void changeDisplayName(String newDisplayName) {
+        if(this.displayName.equals(newDisplayName)) return; // throw an error here if we enforce 'change' in domain
+        if(newDisplayName == null || newDisplayName.isBlank()) throw new IllegalArgumentException("Display name must not be blank");
+        // check Sentence
+        // trim()
+        this.displayName = newDisplayName;
+    }
+
+    public void optInToMarketing() {
+        this.marketingOptIn = true;
+    }
+
+    public void optOutOfMarketing() {
+        this.marketingOptIn = false;
+    }
+
+    // ---- Internal helper methods ----
+
 }
 

@@ -26,7 +26,7 @@ public class Tag extends BaseEntity {
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
-    // getter below, no setter by design
+    // no getter or setter on Collection by design
     @ManyToMany(mappedBy = "tags")
     private Set<Ticket> tickets = new HashSet<>();
 
@@ -34,19 +34,15 @@ public class Tag extends BaseEntity {
 
     public Tag(String name) {
         if (name == null || name.isBlank()) throw new IllegalArgumentException("Tag name must not be blank");
+        // trim, collapse spaces, lower-case?
         this.name = name;
     }
 
     // ---- Getters ----
 
-//    // TODO: this could be enormous - use Repository
-//    public Set<Ticket> getTickets() {
-//        return java.util.Collections.unmodifiableSet(tickets);
-//    }
-
     // ---- Domain logic - Maintain relationship invariants for Tag -> Ticket ----
 
-        // public control of Tag -> Ticket handled by Ticket entity
+        // public control of Tag -> Ticket relationship handled by Ticket entity
 
     void addTicketInternal(Ticket ticket) {
         if(ticket == null) throw new IllegalArgumentException("Ticket must not be null");
@@ -58,8 +54,6 @@ public class Tag extends BaseEntity {
     }
 
     // ---- Domain logic - Maintain local state transition invariants ----
-
-        // TODO: handle local state transition
 
     // ---- Internal helper methods ----
 

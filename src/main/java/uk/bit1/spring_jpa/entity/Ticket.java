@@ -107,33 +107,17 @@ public class Ticket extends BaseEntity {
 
     // ---- Domain logic - Maintain local state transition invariants ----
 
-    public void updateTicket(String newDescription) {
-        if(newDescription == null || newDescription.isBlank()) throw new IllegalArgumentException("Description must not be empty");
+    public void changeDescription(String newDescription) {
+        if(newDescription == null || newDescription.isBlank()) {
+            throw new IllegalArgumentException("Description must not be empty");
+        }
+        if(status == TicketStatus.CLOSED) {
+            throw new IllegalArgumentException("Cannot change description of closed Ticket");
+        }
+        // check are Sentence
+        // trim()
         this.description = newDescription;
     }
-
-    // TODO:
-    // 3) Ticket status logic: decent, but you’re missing transitions
-    //
-    //You have resolveTicket() and closeTicket(). But you can’t move from:
-    //
-    //NEW -> OPEN
-    //
-    //OPEN -> IN_PROGRESS
-    //
-    //RESOLVED -> CLOSED (maybe implicit)
-    //
-    //If you mean NEW is a thing, you need methods like:
-    //
-    //start() or open()
-    //
-    //beginWork()
-    //
-    //reopen() (if allowed)
-    //
-    //Otherwise “NEW” is pointless and will trap you in invalid states.
-    //
-    //Also: throw IllegalStateException for invalid transitions (not IllegalArgumentException). Invalid state is not invalid input.
 
     public void resolveTicket() {
         if(isClosed()) {
