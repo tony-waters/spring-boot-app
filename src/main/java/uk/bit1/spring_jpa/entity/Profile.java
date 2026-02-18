@@ -16,7 +16,7 @@ public class Profile extends BaseEntity {
     @Getter  // no setter by design
     private Long id;
 
-    @Getter  // no setter by design
+    @Getter(AccessLevel.PACKAGE)  // no setter by design
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId
     @JoinColumn(name = "customer_id", nullable = false, unique = true)
@@ -36,15 +36,15 @@ public class Profile extends BaseEntity {
 
     Profile(String displayName, boolean marketingOptIn) {
         if(displayName == null || displayName.isBlank()) throw new IllegalArgumentException("Display name must not be blank");
+        // TODO:
+        // check Sentence
+        // trim()
         this.displayName = displayName;
         this.marketingOptIn = marketingOptIn;
     }
 
-    // ---- Getters ----
-
-    // ---- Domain logic - Maintain relationship invariants: Profile -> Customer ----
-
-        // public access to relationship handled by Customer entity
+    // ---- Profile -> Customer relationship ----
+    // (public access to relationship handled by Customer entity)
 
     void setCustomerInternal(Customer customer) {
         if (customer == null) throw new IllegalArgumentException("Profile must have a Customer");
@@ -58,11 +58,12 @@ public class Profile extends BaseEntity {
         this.customer = null;
     }
 
-    // ---- Domain logic - Maintain state transition invariants ----
+    // ---- State transition ----
 
     public void changeDisplayName(String newDisplayName) {
         if(this.displayName.equals(newDisplayName)) return; // throw an error here if we enforce 'change' in domain
         if(newDisplayName == null || newDisplayName.isBlank()) throw new IllegalArgumentException("Display name must not be blank");
+        // TODO:
         // check Sentence
         // trim()
         this.displayName = newDisplayName;
@@ -75,8 +76,6 @@ public class Profile extends BaseEntity {
     public void optOutOfMarketing() {
         this.marketingOptIn = false;
     }
-
-    // ---- Internal helper methods ----
 
 }
 

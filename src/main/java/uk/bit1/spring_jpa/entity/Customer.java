@@ -61,19 +61,14 @@ public class Customer extends BaseEntity {
         this.firstName = firstName;
     }
 
-    // ---- Getters ----
-
-    // TODO: what if there are 100s of Tickets? Leave this to Repositories?
-//    public Set<Ticket> getTickets() {
-//        // prevent external modification that could break relationships
-//        return java.util.Collections.unmodifiableSet(tickets);
-//    }
-
-    // ---- Domain logic - Maintain relationship invariants for Customer -> Profile ----
+    // ---- Customer -> Profile relationship ----
 
     // Customer has control of Customer-Profile relationship changes (despite Profile being the Owner side)
     public void createProfile(String displayName, boolean marketingOptIn) {
         if (displayName == null || displayName.isBlank()) throw new IllegalArgumentException("Display name must not be null");
+        // TODO:
+        // check Sentence
+        // trim()
         if (this.profile != null) throw new IllegalStateException("Customer already has a Profile");
         Profile profile = new Profile(displayName, marketingOptIn);
         this.profile = profile;
@@ -81,17 +76,18 @@ public class Customer extends BaseEntity {
     }
 
     public void removeProfile() {
-        if (this.profile == null) return;
+        if (this.profile == null) throw new IllegalStateException("Customer has no Profile to remove");
         Profile old = this.profile;
         this.profile = null;
         old.clearCustomerInternal();
     }
 
-    // ---- Domain logic - Maintain relationship invariants for Customer -> Ticket ----
+    // ---- Customer -> Ticket relationship ----
 
     // Customer has control of Customer-Ticket relationship changes (despite Ticket being the Owner side)
     public Ticket raiseTicket(String description) {
         if(description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be null");
+        // TODO:
         // check Sentence
         // trim()
         Ticket ticket = new Ticket(description);
@@ -140,7 +136,7 @@ public class Customer extends BaseEntity {
         // ... will (should) be run within a @Transactional context in the Service layer
     }
 
-    // ---- Domain logic - Maintain local state transition invariants ----
+    // ---- State transition ----
 
     public void changeName(String firstName, String lastName) {
         if(firstName == null || firstName.isBlank()) throw new IllegalArgumentException("firstName must have a value");
@@ -148,8 +144,6 @@ public class Customer extends BaseEntity {
         this.firstName = firstName;
         this.lastName = lastName;
     }
-
-    // ---- Internal helper methods ----
 
     // ---- General ----
 

@@ -34,15 +34,12 @@ public class Tag extends BaseEntity {
 
     public Tag(String name) {
         if (name == null || name.isBlank()) throw new IllegalArgumentException("Tag name must not be blank");
-        // trim, collapse spaces, lower-case?
+        // TODO: trim, collapse spaces, lower-case?
         this.name = name;
     }
 
-    // ---- Getters ----
-
-    // ---- Domain logic - Maintain relationship invariants for Tag -> Ticket ----
-
-        // public control of Tag -> Ticket relationship handled by Ticket entity
+    // ---- Tag -> Ticket relationship ----
+    // (public control of relationship handled by Ticket entity)
 
     void addTicketInternal(Ticket ticket) {
         if(ticket == null) throw new IllegalArgumentException("Ticket must not be null");
@@ -52,11 +49,6 @@ public class Tag extends BaseEntity {
     void removeTicketInternal(Ticket ticket) {
         tickets.remove(ticket);
     }
-
-    // ---- Domain logic - Maintain local state transition invariants ----
-
-    // ---- Internal helper methods ----
-
 
 }
 

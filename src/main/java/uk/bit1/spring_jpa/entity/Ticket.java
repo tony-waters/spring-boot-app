@@ -24,8 +24,7 @@ public class Ticket extends BaseEntity {
     @Getter  // no setter by design
     private Long id;
 
-    // TODO: should 'customer' have a public getter?
-    @Getter // no setter by design
+    @Getter(AccessLevel.PACKAGE)// no setter by design
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
@@ -59,9 +58,8 @@ public class Ticket extends BaseEntity {
         this.status = TicketStatus.OPEN;
     }
 
-    // ---- Domain logic - Maintain relationship invariants for Ticket -> Customer ----
-
-        // public access to relationship handled by Customer entity
+    // ---- Ticket -> Customer relationship ----
+    // (public access to relationship handled by Customer entity)
 
     void setCustomerInternal(Customer customer) {
         if (customer == null) throw new IllegalArgumentException("Ticket must have a Customer");
@@ -75,7 +73,7 @@ public class Ticket extends BaseEntity {
         this.customer = customer;
     }
 
-    // ---- Domain logic - Maintain relationship invariants for Ticket -> Tag ----
+    // ---- Ticket -> Tag relationship ----
 
     public void addTag(Tag tag) {
         if (tag == null) throw new IllegalArgumentException("Tag cannot be null");
@@ -101,7 +99,7 @@ public class Ticket extends BaseEntity {
         }
     }
 
-    // ---- Domain logic - Maintain local state transition invariants ----
+    // ---- State transition ----
 
     public void changeDescription(String description) {
         if (description == null || description.isBlank())
@@ -125,8 +123,6 @@ public class Ticket extends BaseEntity {
     public void close() {
         transitionTo(TicketStatus.CLOSED, "close", TicketStatus.RESOLVED);
     }
-
-    // ---- Internal helper methods ----
 
     private void requireNotClosed(String action) {
         if (status == TicketStatus.CLOSED)
