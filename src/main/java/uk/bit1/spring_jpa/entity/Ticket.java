@@ -40,21 +40,22 @@ public class Ticket extends BaseEntity {
 
     @Getter // no setter by design
     @NotBlank
-    @Size(min = 2, max = 255)
+    @Size(min = 10, max = 255)
     @Column(nullable = false, length = 255)
     private String description;
 
-    // no getter or setter on Collection by design
+    @Getter // no setter by design
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private TicketStatus status;
 
     // ---- Constructors ----
 
+    // do not instantiate directly
+    // use Customer.raiseTicket() instead
     Ticket(String description) {
         if (description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be empty");
-        // check Sentence, trim()
-        this.description = description;
+        this.description = description.strip();
         this.status = TicketStatus.OPEN;
     }
 
@@ -68,7 +69,7 @@ public class Ticket extends BaseEntity {
         // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
         // ... need to ensure use of 'equals()' method '!this.customer.equals(customer)'
         if (this.customer != null && !this.customer.equals(customer)) {
-            throw new IllegalStateException("Ticket customer cannot be changed; delete and recreate instead");
+            throw new IllegalStateException("Ticket customer cannot be changed - delete and recreate instead");
         }
         this.customer = customer;
     }
@@ -79,8 +80,6 @@ public class Ticket extends BaseEntity {
         if (tag == null) throw new IllegalArgumentException("Tag cannot be null");
         if (tags.add(tag)) {
             tag.addTicketInternal(this);
-        } else {
-            throw new IllegalArgumentException("Cannot add Tag - already exists in Collection?");
         }
     }
 
@@ -88,8 +87,6 @@ public class Ticket extends BaseEntity {
         if (tag == null) return;
         if (tags.remove(tag)) {
             tag.removeTicketInternal(this);
-        } else {
-            throw new IllegalStateException("Ticket tag could not be removed - does not exist in Collection?");
         }
     }
 
@@ -102,7 +99,7 @@ public class Ticket extends BaseEntity {
     // ---- State transition ----
 
     public void changeDescription(String description) {
-        requireNotClosed("changeDescription");
+        requireNotClosedOrResolved("changeDescription");
         if (description == null || description.isBlank()) {
             throw new IllegalArgumentException("Description must not be blank");
         }
@@ -130,6 +127,12 @@ public class Ticket extends BaseEntity {
             throw new IllegalStateException("Cannot " + action + " when ticket is CLOSED");
     }
 
+    private void requireNotClosedOrResolved(String action) {
+        requireNotClosed(action);
+        if (status == TicketStatus.RESOLVED)
+            throw new IllegalStateException("Cannot " + action + " when ticket is RESOLVED");
+    }
+
     private void transitionTo(TicketStatus target, String action, TicketStatus... allowedFrom) {
         requireNotClosed(action);
         for (TicketStatus s : allowedFrom) {
@@ -146,7 +149,7 @@ public class Ticket extends BaseEntity {
     @Override
     public String toString() {
         return String.format(
-                "SupportTicket[id=%d, description='%s']",
+                "Ticket[id=%d, description='%s']",
                 getId(), description);
     }
 

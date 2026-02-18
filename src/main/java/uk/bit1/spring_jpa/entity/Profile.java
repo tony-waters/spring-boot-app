@@ -34,6 +34,8 @@ public class Profile extends BaseEntity {
 
     // ---- Constructors ----
 
+    // Profile cannot exist independently of Customer.
+    // Use Customer.createProfile() to create a new Profile
     Profile(String displayName, boolean marketingOptIn) {
         if(displayName == null || displayName.isBlank())
             throw new IllegalArgumentException("Display name must not be blank");
@@ -61,10 +63,7 @@ public class Profile extends BaseEntity {
     public void changeDisplayName(String newDisplayName) {
         if(this.displayName.equals(newDisplayName)) return; // throw an error here if we enforce 'change' in domain
         if(newDisplayName == null || newDisplayName.isBlank()) throw new IllegalArgumentException("Display name must not be blank");
-        // TODO:
-        // check Sentence
-        // trim()
-        this.displayName = newDisplayName;
+        this.displayName = newDisplayName.strip();
     }
 
     public void optInToMarketing() {

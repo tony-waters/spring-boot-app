@@ -66,11 +66,8 @@ public class Customer extends BaseEntity {
     // Customer has control of Customer-Profile relationship changes (despite Profile being the Owner side)
     public void createProfile(String displayName, boolean marketingOptIn) {
         if (displayName == null || displayName.isBlank()) throw new IllegalArgumentException("Display name must not be null");
-        // TODO:
-        // check Sentence
-        // trim()
         if (this.profile != null) throw new IllegalStateException("Customer already has a Profile");
-        Profile profile = new Profile(displayName, marketingOptIn);
+        Profile profile = new Profile(displayName.strip(), marketingOptIn);
         this.profile = profile;
         profile.setCustomerInternal(this);
     }

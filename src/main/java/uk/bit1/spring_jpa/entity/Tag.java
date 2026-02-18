@@ -35,7 +35,8 @@ public class Tag extends BaseEntity {
     public Tag(String name) {
         if (name == null || name.isBlank())
             throw new IllegalArgumentException("Tag name must not be blank");
-        this.name = name.strip();
+        // strip and normailise to lower case
+        this.name = name.strip().toLowerCase();
     }
 
     // ---- Tag -> Ticket relationship ----

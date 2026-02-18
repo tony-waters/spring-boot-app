@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.hibernate.Hibernate;
 
 import java.time.Instant;
+import java.util.Objects;
 
 @MappedSuperclass
 public abstract class BaseEntity {
@@ -58,6 +59,7 @@ public abstract class BaseEntity {
     public final int hashCode() {
         // stable across proxies and before/after initialization
         // ... though not the best performing approach
-        return Hibernate.getClass(this).hashCode();
+//        return Hibernate.getClass(this).hashCode();
+        return Objects.hash(Hibernate.getClass(this), getId());
     }
 }
