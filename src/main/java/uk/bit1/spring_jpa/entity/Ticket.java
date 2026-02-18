@@ -45,7 +45,7 @@ public class Ticket extends BaseEntity {
     @Column(nullable = false, length = 255)
     private String description;
 
-    @Getter // no setter by design
+    // no getter or setter on Collection by design
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private TicketStatus status;
@@ -54,15 +54,9 @@ public class Ticket extends BaseEntity {
 
     Ticket(String description) {
         if (description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be empty");
+        // check Sentence, trim()
         this.description = description;
-        this.status = TicketStatus.NEW;
-    }
-
-    // ---- Getters ----
-
-    public Set<Tag> getTags() {
-        // prevent external modification that could break relationships
-        return java.util.Collections.unmodifiableSet(tags);
+        this.status = TicketStatus.OPEN;
     }
 
     // ---- Domain logic - Maintain relationship invariants for Ticket -> Customer ----
@@ -83,19 +77,21 @@ public class Ticket extends BaseEntity {
 
     // ---- Domain logic - Maintain relationship invariants for Ticket -> Tag ----
 
-    // TODO: check unique
     public void addTag(Tag tag) {
-        if (tag == null) return;
+        if (tag == null) throw new IllegalArgumentException("Tag cannot be null");
         if (tags.add(tag)) {
             tag.addTicketInternal(this);
+        } else {
+            throw new IllegalArgumentException("Cannot add Tag - already exists in Collection?");
         }
     }
 
-    // TODO: check exists
     public void removeTag(Tag tag) {
         if (tag == null) return;
         if (tags.remove(tag)) {
             tag.removeTicketInternal(this);
+        } else {
+            throw new IllegalStateException("Ticket tag could not be removed - does not exist in Collection?");
         }
     }
 
@@ -107,48 +103,49 @@ public class Ticket extends BaseEntity {
 
     // ---- Domain logic - Maintain local state transition invariants ----
 
-    public void changeDescription(String newDescription) {
-        if(newDescription == null || newDescription.isBlank()) {
-            throw new IllegalArgumentException("Description must not be empty");
-        }
-        if(status == TicketStatus.CLOSED) {
-            throw new IllegalArgumentException("Cannot change description of closed Ticket");
-        }
-        // check are Sentence
-        // trim()
-        this.description = newDescription;
+    public void changeDescription(String description) {
+        if (description == null || description.isBlank())
+            throw new IllegalArgumentException("Description must not be blank");
+        requireNotClosed("changeDescription");
+        this.description = description;
     }
 
-    public void resolveTicket() {
-        if(isClosed()) {
-            throw new IllegalStateException("Cannot Resolve a closed Ticket");
-        }
-        if(isNew()) {
-            throw new IllegalArgumentException("Cannot Resolve a new Ticket, must be in open or in-progress state");
-        }
-        this.status = TicketStatus.RESOLVED;
+    public void startWork() {
+        transitionTo(TicketStatus.IN_PROGRESS, "startWork", TicketStatus.OPEN);
     }
 
-    public void closeTicket() {
-        if(isClosed()) {
-            throw new IllegalStateException("Ticket is already closed");
-        }
-        if(isNew()) {
-            throw new IllegalArgumentException("Ticket cannot be closed when new");
-        }
-        this.status = TicketStatus.CLOSED;
+    public void resolve() {
+        transitionTo(TicketStatus.RESOLVED, "resolve", TicketStatus.OPEN, TicketStatus.IN_PROGRESS);
+    }
+
+    public void reopen() {
+        transitionTo(TicketStatus.OPEN, "reopen", TicketStatus.RESOLVED);
+    }
+
+    public void close() {
+        transitionTo(TicketStatus.CLOSED, "close", TicketStatus.RESOLVED);
     }
 
     // ---- Internal helper methods ----
 
-    private boolean isClosed() {
-        return this.status == TicketStatus.CLOSED;
+    private void requireNotClosed(String action) {
+        if (status == TicketStatus.CLOSED)
+            throw new IllegalStateException("Cannot " + action + " when ticket is CLOSED");
     }
 
-    private boolean isNew() {
-        return this.status == TicketStatus.NEW;
-    }
+    private void transitionTo(TicketStatus target, String action, TicketStatus... allowedFrom) {
+        // closed is final
+        if (status == TicketStatus.CLOSED)
+            throw new IllegalStateException("Cannot " + action + " when ticket is CLOSED");
 
+        for (TicketStatus s : allowedFrom) {
+            if (status == s) {
+                status = target;
+                return;
+            }
+        }
+        throw new IllegalStateException("Cannot " + action + " when ticket is " + status);
+    }
 
     // ---- General ----
 
