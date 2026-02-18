@@ -77,14 +77,14 @@ public class Ticket extends BaseEntity {
     // ---- Ticket -> Tag relationship ----
 
     public void addTag(Tag tag) {
-        if (tag == null) throw new IllegalArgumentException("Tag cannot be null");
+        if (tag == null) return; // addTag should be idempotent
         if (tags.add(tag)) {
             tag.addTicketInternal(this);
         }
     }
 
     public void removeTag(Tag tag) {
-        if (tag == null) return;
+        if (tag == null) return; // removeTag should be idempotent
         if (tags.remove(tag)) {
             tag.removeTicketInternal(this);
         }
@@ -103,7 +103,7 @@ public class Ticket extends BaseEntity {
         if (description == null || description.isBlank()) {
             throw new IllegalArgumentException("Description must not be blank");
         }
-        this.description = description;
+        this.description = description.strip();
     }
 
     public void startWork() {

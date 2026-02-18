@@ -57,8 +57,8 @@ public class Customer extends BaseEntity {
     public Customer(String lastName, String firstName) {
         if(lastName == null || lastName.isBlank()) throw new IllegalArgumentException("lastName must have a value");
         if(firstName == null || firstName.isBlank()) throw new IllegalArgumentException("firstName must have a value");
-        this.lastName= lastName;
-        this.firstName = firstName;
+        this.lastName= lastName.strip();
+        this.firstName = firstName.strip();
     }
 
     // ---- Customer -> Profile relationship ----
@@ -135,8 +135,8 @@ public class Customer extends BaseEntity {
     public void changeName(String firstName, String lastName) {
         if(firstName == null || firstName.isBlank()) throw new IllegalArgumentException("firstName must have a value");
         if (lastName == null || lastName.isBlank()) throw new IllegalArgumentException("lastName must have a value");
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.firstName = firstName.strip();
+        this.lastName = lastName.strip();
     }
 
     // ---- General ----
