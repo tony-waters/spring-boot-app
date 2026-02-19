@@ -1,0 +1,557 @@
+here is the new version. any other changes i should make pre-testing
+
+
+
+=== NEXT FILENAME: /home/tw/Code/spring-jpa/src/main/java/uk/bit1/spring_jpa/entity/Tag.java: 1656 bytes ===
+package uk.bit1.spring_jpa.entity;
+
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(
+        name = "tag",
+        uniqueConstraints = @UniqueConstraint(name = "uc_tag_name", columnNames = "name")
+)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Tag extends BaseEntity {
+
+    @Id
+    @SequenceGenerator(name="global_seq", sequenceName="global_seq", allocationSize=50)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="global_seq")
+    @Getter  // no setter by design
+    private Long id;
+
+    @Getter // no setter by design
+    @Column(name = "name", nullable = false, length = 50)
+    private String name;
+
+    // unmodifiable getter below - no setter on Collection by design
+    @ManyToMany(mappedBy = "tags")
+    private Set<Ticket> tickets = new HashSet<>();
+
+    // ---- Constructors ----
+
+    public Tag(String name) {
+        if (name == null || name.isBlank())
+            throw new IllegalArgumentException("Tag name must not be blank");
+        // strip and normailise to lower case
+        this.name = name.strip().toLowerCase();
+    }
+
+    // ---- Collection getters ----
+
+    protected Set<Ticket> getTickets() {
+        return Collections.unmodifiableSet(tickets);
+    }
+
+    // ---- Tag -> Ticket relationship ----
+    // (public control of relationship handled by Ticket entity)
+
+    void addTicketInternal(Ticket ticket) {
+        tickets.add(ticket);
+    }
+
+    void removeTicketInternal(Ticket ticket) {
+        tickets.remove(ticket);
+    }
+
+}
+
+
+
+=== NEXT FILENAME: /home/tw/Code/spring-jpa/src/main/java/uk/bit1/spring_jpa/entity/Ticket.java: 5241 bytes ===
+package uk.bit1.spring_jpa.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(
+        name = "ticket",
+        indexes = @Index(name = "idx_ticket_customer_id", columnList = "customer_id")
+)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Ticket extends BaseEntity {
+
+    @Id
+    @SequenceGenerator(name="global_seq", sequenceName="global_seq", allocationSize=50)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="global_seq")
+    @Getter  // no setter by design
+    private Long id;
+
+    @Getter(AccessLevel.PACKAGE)// no setter by design
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customer;
+
+    // unmodifiable getter below, no setter by design
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "ticket_tag",
+            joinColumns = @JoinColumn(name = "ticket_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags = new HashSet<>();
+
+    @Getter // no setter by design
+    @NotBlank
+    @Size(min = 10, max = 255)
+    @Column(nullable = false, length = 255)
+    private String description;
+
+    @Getter // no setter by design
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private TicketStatus status;
+
+    // ---- Constructors ----
+
+    // do not instantiate directly
+    // use Customer.raiseTicket() instead
+    Ticket(String description) {
+        if (description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be empty");
+        this.description = description.strip();
+        this.status = TicketStatus.OPEN;
+    }
+
+    // ---- Collection getters ----
+
+    protected Set<Tag> getTags() {
+        return Collections.unmodifiableSet(tags);
+    }
+
+    // ---- Ticket -> Customer relationship ----
+    // (public access to relationship handled by Customer entity)
+
+    void setCustomerInternal(Customer customer) {
+        if (customer == null) throw new IllegalArgumentException("Ticket must have a Customer");
+
+        // Object comparison like "this.customer != customer" will not work properly
+        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
+        // ... need to ensure use of 'equals()' method '!this.customer.equals(customer)'
+        if (this.customer != null && !this.customer.equals(customer)) {
+            throw new IllegalStateException("Ticket customer cannot be changed - delete and recreate instead");
+        }
+        this.customer = customer;
+    }
+
+    // ---- Ticket -> Tag relationship ----
+
+    public void addTag(Tag tag) {
+        if (tag == null) return; // addTag should be idempotent
+        if (tags.add(tag)) {
+            tag.addTicketInternal(this);
+        }
+    }
+
+    public void removeTag(Tag tag) {
+        if (tag == null) return; // removeTag should be idempotent
+        if (tags.remove(tag)) {
+            tag.removeTicketInternal(this);
+        }
+    }
+
+    public void clearTags() {
+        for (Tag tag : new HashSet<>(tags)) {
+            removeTag(tag);
+        }
+    }
+
+    // ---- State transition ----
+
+    public void changeDescription(String description) {
+        requireNotClosedOrResolved("changeDescription");
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException("Description must not be blank");
+        }
+        this.description = description.strip();
+    }
+
+    public void startWork() {
+        transitionTo(TicketStatus.IN_PROGRESS, "startWork", TicketStatus.OPEN);
+    }
+
+    public void resolve() {
+        transitionTo(TicketStatus.RESOLVED, "resolve", TicketStatus.OPEN, TicketStatus.IN_PROGRESS);
+    }
+
+    public void reopen() {
+        transitionTo(TicketStatus.OPEN, "reopen", TicketStatus.RESOLVED);
+    }
+
+    public void close() {
+        transitionTo(TicketStatus.CLOSED, "close", TicketStatus.RESOLVED);
+    }
+
+    private void requireNotClosed(String action) {
+        if (status == TicketStatus.CLOSED)
+            throw new IllegalStateException("Cannot " + action + " when ticket is CLOSED");
+    }
+
+    private void requireNotClosedOrResolved(String action) {
+        requireNotClosed(action);
+        if (status == TicketStatus.RESOLVED)
+            throw new IllegalStateException("Cannot " + action + " when ticket is RESOLVED");
+    }
+
+    private void transitionTo(TicketStatus target, String action, TicketStatus... allowedFrom) {
+        requireNotClosed(action);
+        for (TicketStatus s : allowedFrom) {
+            if (status == s) {
+                status = target;
+                return;
+            }
+        }
+        throw new IllegalStateException("Cannot " + action + " when ticket is " + status);
+    }
+
+    // ---- General ----
+
+    @Override
+    public String toString() {
+        return String.format(
+                "Ticket[id=%d, description='%s']",
+                getId(), description);
+    }
+
+}
+
+
+=== NEXT FILENAME: /home/tw/Code/spring-jpa/src/main/java/uk/bit1/spring_jpa/entity/Profile.java: 2564 bytes ===
+package uk.bit1.spring_jpa.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "customer_profile")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Profile extends BaseEntity {
+
+    @Id
+    @Getter  // no setter by design
+    private Long id;
+
+    @Getter(AccessLevel.PACKAGE)  // no setter by design
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @MapsId
+    @JoinColumn(name = "customer_id", nullable = false, unique = true)
+    private Customer customer;
+
+    @Getter  // no setter by design
+    @NotBlank
+    @Size(min = 2, max = 80)
+    @Column(name = "display_name", length = 80, nullable = false, unique = true)
+    private String displayName;
+
+    @Getter  // no setter by design
+    @Column(name = "marketing_opt_in", nullable = false)
+    private boolean marketingOptIn = false;
+
+    // ---- Constructors ----
+
+    // Profile cannot exist independently of Customer.
+    // Use Customer.createProfile() to create a new Profile
+    Profile(String displayName, boolean marketingOptIn) {
+        if(displayName == null || displayName.isBlank())
+            throw new IllegalArgumentException("Display name must not be blank");
+        this.displayName = displayName.strip();
+        this.marketingOptIn = marketingOptIn;
+    }
+
+    // ---- Profile -> Customer relationship ----
+    // (public access to relationship handled by Customer entity)
+
+    void setCustomerInternal(Customer customer) {
+        if (customer == null) throw new IllegalArgumentException("Profile must have a Customer");
+        if (this.customer != null && !this.customer.equals(customer)) {
+            throw new IllegalStateException("Profile cannot be moved to another Customer");
+        }
+        this.customer = customer;
+    }
+
+    void clearCustomerInternal() {
+        this.customer = null;
+    }
+
+    // ---- State transition ----
+
+    public void changeDisplayName(String newDisplayName) {
+        if(this.displayName.equals(newDisplayName)) return; // throw an error here if we enforce 'change' in domain
+        if(newDisplayName == null || newDisplayName.isBlank()) throw new IllegalArgumentException("Display name must not be blank");
+        this.displayName = newDisplayName.strip();
+    }
+
+    public void optInToMarketing() {
+        this.marketingOptIn = true;
+    }
+
+    public void optOutOfMarketing() {
+        this.marketingOptIn = false;
+    }
+
+}
+
+
+
+=== NEXT FILENAME: /home/tw/Code/spring-jpa/src/main/java/uk/bit1/spring_jpa/entity/BaseEntity.java: 1760 bytes ===
+package uk.bit1.spring_jpa.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import org.hibernate.Hibernate;
+
+import java.time.Instant;
+import java.util.Objects;
+
+@MappedSuperclass
+public abstract class BaseEntity {
+
+    // Optimistic locking
+    @Getter  // no setter by design
+    @Version
+    private Long version;
+
+    @Getter  // no setter by design
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @Getter  // no setter by design
+    @Column(name = "updated_at", nullable = false, updatable = true)
+    private Instant updatedAt;
+
+    // ---- Hooks to set createdAt and updatedAt values ----
+
+    @PrePersist
+    protected void onCreate() {
+        Instant now = Instant.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updatedAt = Instant.now();
+    }
+
+    // ---- equals() and hashCode() ----
+
+    public abstract Long getId();
+
+    // override equals() and hashCode() to compare DB id
+    // ... needs to be 'proxy safe'
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+
+        // compare the real entity class, not the proxy class
+        if (Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+
+        BaseEntity that = (BaseEntity) o;
+        return getId() != null && getId().equals(that.getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        // stable across proxies and before/after initialization
+        // ... though not the best performing approach
+//        return Hibernate.getClass(this).hashCode();
+        return Objects.hash(Hibernate.getClass(this), getId());
+    }
+}
+
+
+=== NEXT FILENAME: /home/tw/Code/spring-jpa/src/main/java/uk/bit1/spring_jpa/entity/TicketStatus.java: 117 bytes ===
+package uk.bit1.spring_jpa.entity;
+
+public enum TicketStatus {
+    OPEN,
+    IN_PROGRESS,
+    RESOLVED,
+    CLOSED
+}
+
+
+=== NEXT FILENAME: /home/tw/Code/spring-jpa/src/main/java/uk/bit1/spring_jpa/entity/Customer.java: 6077 bytes ===
+package uk.bit1.spring_jpa.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Customer extends BaseEntity {
+
+    @Id
+    @SequenceGenerator(name="global_seq", sequenceName="global_seq", allocationSize=50)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="global_seq")
+    @Getter  // no setter by design
+    private Long id;
+
+    @Getter // no setter by design
+    @OneToOne(
+            mappedBy = "customer",
+            // TODO: this is redundant?
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            optional = true
+    )
+    private Profile profile;
+
+    // unmodifiable getter below - no setter for Collection by design
+    @OneToMany(
+            mappedBy = "customer",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private Set<Ticket> tickets = new HashSet<>();
+
+    @Getter // no setter by design
+    @NotBlank
+    @Size(min = 2, max = 50)
+    @Column(name = "last_name", length = 50, nullable = false)
+    private String lastName;
+
+    @Getter // no setter by design
+    @NotBlank
+    @Size(min = 2, max = 50)
+    @Column(name = "first_name", length = 50, nullable = false)
+    private String firstName;
+
+    // ---- Constructors ----
+
+    public Customer(String lastName, String firstName) {
+        if(lastName == null || lastName.isBlank()) throw new IllegalArgumentException("lastName must have a value");
+        if(firstName == null || firstName.isBlank()) throw new IllegalArgumentException("firstName must have a value");
+        this.lastName= lastName.strip();
+        this.firstName = firstName.strip();
+    }
+
+    // ---- Collection getters ----
+
+    protected Set<Ticket> getTickets() {
+        return Collections.unmodifiableSet(tickets);
+    }
+
+    // ---- Customer -> Profile relationship ----
+
+    // Customer has control of Customer-Profile relationship changes (despite Profile being the Owner side)
+    public void createProfile(String displayName, boolean marketingOptIn) {
+        if (displayName == null || displayName.isBlank()) throw new IllegalArgumentException("Display name must not be null");
+        if (this.profile != null) throw new IllegalStateException("Customer already has a Profile");
+        Profile profile = new Profile(displayName.strip(), marketingOptIn);
+        this.profile = profile;
+        profile.setCustomerInternal(this);
+    }
+
+    public void removeProfile() {
+        if (this.profile == null) throw new IllegalStateException("Customer has no Profile to remove");
+        Profile old = this.profile;
+        this.profile = null;
+        old.clearCustomerInternal();
+    }
+
+    // ---- Customer -> Ticket relationship ----
+
+    // Customer has control of Customer-Ticket relationship changes (despite Ticket being the Owner side)
+    public Ticket raiseTicket(String description) {
+        if(description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be null");
+        Ticket ticket = new Ticket(description.strip());
+        addTicketInternal(ticket);
+        return ticket;
+    }
+
+    public void removeTicket(Ticket ticket) {
+        if(ticket == null) throw new IllegalArgumentException("Ticket must not be null");
+        // Object comparison like "ticket.getCustomer() != this" will not work properly
+        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
+        // ... need to ensure use of 'equals()' method '!this.equals(customer)'
+        if (!this.equals(ticket.getCustomer())) {
+            throw new IllegalArgumentException("Ticket does not belong to this Customer");
+        }
+        removeTicketInternal(ticket);
+    }
+
+    public void removeAllTickets() {
+        // Iterating over a copy avoids ConcurrentModificationException
+        for (Ticket ticket : new HashSet<>(tickets)) {
+            removeTicket(ticket);
+        }
+    }
+
+    private void addTicketInternal(Ticket ticket) {
+        Customer existing = ticket.getCustomer();
+        // Object comparison like "<Entity> != this" will not work properly
+        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
+        // ... need to ensure use of 'equals()' method '!this.equals(existing)'
+        if (existing != null && !this.equals(existing)) {
+            throw new IllegalStateException("Cannot move Ticket between Customers. Delete and replace instead");
+        }
+        ticket.setCustomerInternal(this); // safe even if already set
+        tickets.add(ticket);
+    }
+
+    private void removeTicketInternal(Ticket ticket) {
+        Customer customer = ticket.getCustomer();
+        boolean removed = tickets.remove(ticket);
+        if (!removed) {
+            throw new IllegalStateException("Ticket was not in Customer.tickets (detached instance?)");
+        }
+        // we do not null Ticket.customer to preserve 'nullable = false' in the Domain model.
+        // orphanRemoval will delete on flush
+        // ... will (should) be run within a @Transactional context in the Service layer
+    }
+
+    // ---- State transition ----
+
+    public void changeName(String firstName, String lastName) {
+        if(firstName == null || firstName.isBlank()) throw new IllegalArgumentException("firstName must have a value");
+        if (lastName == null || lastName.isBlank()) throw new IllegalArgumentException("lastName must have a value");
+        this.firstName = firstName.strip();
+        this.lastName = lastName.strip();
+    }
+
+    // ---- General ----
+
+    @Override
+    public String toString() {
+        return "Customer{id=" + getId() + ", firstName=" + firstName + ", lastName=" + lastName + "}";
+    }
+
+}
+
+
+=== DATA SUMMARY ===
+Total Java files processed: 6
+Total lines of code: 532
