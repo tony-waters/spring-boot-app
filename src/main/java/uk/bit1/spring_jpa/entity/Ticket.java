@@ -104,7 +104,7 @@ public class Ticket extends BaseEntity {
     }
 
     public void clearTags() {
-        requireOpenForEditing("removeTags");
+        requireOpenForEditing("clearTags");
         for (Tag tag : new HashSet<>(tags)) {
             removeTag(tag);
         }
