@@ -59,7 +59,7 @@ public abstract class BaseEntity {
     public final int hashCode() {
         // stable across proxies and before/after initialization
         // ... though not the best performing approach
-//        return Hibernate.getClass(this).hashCode();
-        return Objects.hash(Hibernate.getClass(this), getId());
+        return Hibernate.getClass(this).hashCode();
+//        return Objects.hash(Hibernate.getClass(this), getId());
     }
 }
