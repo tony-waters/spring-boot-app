@@ -88,6 +88,7 @@ public class Ticket extends BaseEntity {
     // ---- Ticket -> Tag relationship ----
 
     public void addTag(Tag tag) {
+        requireOpenForEditing("addTag");
         if (tag == null) return; // addTag should be idempotent
         if (tags.add(tag)) {
             tag.addTicketInternal(this);
@@ -95,6 +96,7 @@ public class Ticket extends BaseEntity {
     }
 
     public void removeTag(Tag tag) {
+        requireOpenForEditing("removeTag");
         if (tag == null) return; // removeTag should be idempotent
         if (tags.remove(tag)) {
             tag.removeTicketInternal(this);
@@ -110,7 +112,7 @@ public class Ticket extends BaseEntity {
     // ---- State transition ----
 
     public void changeDescription(String description) {
-        requireNotClosedOrResolved("changeDescription");
+        requireOpenForEditing("changeDescription");
         if (description == null
                 || description.isBlank()
                 || description.length() < 10) {
@@ -140,7 +142,7 @@ public class Ticket extends BaseEntity {
             throw new IllegalStateException("Cannot " + action + " when ticket is CLOSED");
     }
 
-    private void requireNotClosedOrResolved(String action) {
+    private void requireOpenForEditing(String action) {
         requireNotClosed(action);
         if (status == TicketStatus.RESOLVED)
             throw new IllegalStateException("Cannot " + action + " when ticket is RESOLVED");
