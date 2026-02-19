@@ -104,6 +104,7 @@ public class Ticket extends BaseEntity {
     }
 
     public void clearTags() {
+        requireOpenForEditing("removeTags");
         for (Tag tag : new HashSet<>(tags)) {
             removeTag(tag);
         }
@@ -138,13 +139,13 @@ public class Ticket extends BaseEntity {
     }
 
     private void requireNotClosed(String action) {
-        if (status == TicketStatus.CLOSED)
+        if (status.equals(TicketStatus.CLOSED))
             throw new IllegalStateException("Cannot " + action + " when ticket is CLOSED");
     }
 
     private void requireOpenForEditing(String action) {
         requireNotClosed(action);
-        if (status == TicketStatus.RESOLVED)
+        if (status.equals(TicketStatus.RESOLVED))
             throw new IllegalStateException("Cannot " + action + " when ticket is RESOLVED");
     }
 
