@@ -55,18 +55,18 @@ public class Ticket extends BaseEntity {
     // do not instantiate directly
     // use Customer.raiseTicket() instead
     Ticket(String description) {
-        if (description == null
-                || description.isBlank()
-                || description.length() < 10) {
-            throw new IllegalArgumentException("Description must not be empty");
+        if (description == null) throw new IllegalArgumentException("Description cannot be null");
+        String stripped =  description.strip();
+        if(stripped.isBlank() || stripped.length() <10) {
+            throw new IllegalArgumentException("Description must be at least 10 characters");
         }
-        this.description = description.strip();
+        this.description = stripped;
         this.status = TicketStatus.OPEN;
     }
 
     // ---- Collection getters ----
 
-    protected Set<Tag> getTags() {
+    Set<Tag> getTags() {
         return Collections.unmodifiableSet(tags);
     }
 
@@ -88,7 +88,7 @@ public class Ticket extends BaseEntity {
     // ---- Ticket -> Tag relationship ----
 
     public void addTag(Tag tag) {
-        requireOpenForEditing("addTag");
+        requireEditable("addTag");
         if (tag == null) return; // addTag should be idempotent
         if (tags.add(tag)) {
             tag.addTicketInternal(this);
@@ -96,7 +96,7 @@ public class Ticket extends BaseEntity {
     }
 
     public void removeTag(Tag tag) {
-        requireOpenForEditing("removeTag");
+        requireEditable("removeTag");
         if (tag == null) return; // removeTag should be idempotent
         if (tags.remove(tag)) {
             tag.removeTicketInternal(this);
@@ -104,7 +104,7 @@ public class Ticket extends BaseEntity {
     }
 
     public void clearTags() {
-        requireOpenForEditing("clearTags");
+        requireEditable("clearTags");
         for (Tag tag : new HashSet<>(tags)) {
             removeTag(tag);
         }
@@ -113,13 +113,15 @@ public class Ticket extends BaseEntity {
     // ---- State transition ----
 
     public void changeDescription(String description) {
-        requireOpenForEditing("changeDescription");
-        if (description == null
-                || description.isBlank()
-                || description.length() < 10) {
-            throw new IllegalArgumentException("Description must not be blank");
+        requireEditable("changeDescription");
+        if (description == null) {
+            throw new IllegalArgumentException("Description cannot be null");
         }
-        this.description = description.strip();
+        String stripped =  description.strip();
+        if(stripped.isBlank() || stripped.length() <10) {
+            throw new IllegalArgumentException("Description must be at least 10 characters");
+        }
+        this.description = stripped;
     }
 
     public void startWork() {
@@ -139,13 +141,13 @@ public class Ticket extends BaseEntity {
     }
 
     private void requireNotClosed(String action) {
-        if (status.equals(TicketStatus.CLOSED))
+        if (status == TicketStatus.CLOSED)
             throw new IllegalStateException("Cannot " + action + " when ticket is CLOSED");
     }
 
-    private void requireOpenForEditing(String action) {
+    private void requireEditable(String action) {
         requireNotClosed(action);
-        if (status.equals(TicketStatus.RESOLVED))
+        if (status == TicketStatus.RESOLVED)
             throw new IllegalStateException("Cannot " + action + " when ticket is RESOLVED");
     }
 

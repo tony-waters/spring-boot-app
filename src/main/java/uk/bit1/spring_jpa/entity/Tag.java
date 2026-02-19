@@ -42,7 +42,7 @@ public class Tag extends BaseEntity {
 
     // ---- Collection getters ----
 
-    protected Set<Ticket> getTickets() {
+    Set<Ticket> getTickets() {
         return Collections.unmodifiableSet(tickets);
     }
 

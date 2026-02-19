@@ -7,7 +7,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -65,7 +64,7 @@ public class Customer extends BaseEntity {
 
     // ---- Collection getters ----
 
-    protected Set<Ticket> getTickets() {
+    Set<Ticket> getTickets() {
         return Collections.unmodifiableSet(tickets);
     }
 

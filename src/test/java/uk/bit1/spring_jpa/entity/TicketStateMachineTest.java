@@ -107,7 +107,7 @@ class TicketStateMachineTest {
 
         assertThatThrownBy(() -> t.changeDescription("   "))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("must not be blank");
+                .hasMessageContaining("must be at least 10 characters");
     }
 
     @Test
