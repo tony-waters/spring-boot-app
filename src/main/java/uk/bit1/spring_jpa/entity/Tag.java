@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,7 +27,7 @@ public class Tag extends BaseEntity {
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
-    // no getter or setter on Collection by design
+    // unmodifiable getter below - no setter on Collection by design
     @ManyToMany(mappedBy = "tags")
     private Set<Ticket> tickets = new HashSet<>();
 
@@ -37,6 +38,12 @@ public class Tag extends BaseEntity {
             throw new IllegalArgumentException("Tag name must not be blank");
         // strip and normailise to lower case
         this.name = name.strip().toLowerCase();
+    }
+
+    // ---- Collection getters ----
+
+    protected Set<Ticket> getTickets() {
+        return Collections.unmodifiableSet(tickets);
     }
 
     // ---- Tag -> Ticket relationship ----

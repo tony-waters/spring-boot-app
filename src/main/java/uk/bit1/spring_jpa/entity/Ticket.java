@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,7 +30,7 @@ public class Ticket extends BaseEntity {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    // getter below, no setter by design
+    // unmodifiable getter below, no setter by design
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "ticket_tag",
@@ -54,9 +55,19 @@ public class Ticket extends BaseEntity {
     // do not instantiate directly
     // use Customer.raiseTicket() instead
     Ticket(String description) {
-        if (description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be empty");
+        if (description == null
+                || description.isBlank()
+                || description.length() < 10) {
+            throw new IllegalArgumentException("Description must not be empty");
+        }
         this.description = description.strip();
         this.status = TicketStatus.OPEN;
+    }
+
+    // ---- Collection getters ----
+
+    protected Set<Tag> getTags() {
+        return Collections.unmodifiableSet(tags);
     }
 
     // ---- Ticket -> Customer relationship ----
@@ -100,7 +111,9 @@ public class Ticket extends BaseEntity {
 
     public void changeDescription(String description) {
         requireNotClosedOrResolved("changeDescription");
-        if (description == null || description.isBlank()) {
+        if (description == null
+                || description.isBlank()
+                || description.length() < 10) {
             throw new IllegalArgumentException("Description must not be blank");
         }
         this.description = description.strip();

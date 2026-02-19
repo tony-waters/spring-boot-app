@@ -7,6 +7,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,7 +33,7 @@ public class Customer extends BaseEntity {
     )
     private Profile profile;
 
-    // no public getter or setter for Collections by design
+    // unmodifiable getter below - no setter for Collection by design
     @OneToMany(
             mappedBy = "customer",
             cascade = CascadeType.ALL,
@@ -59,6 +61,12 @@ public class Customer extends BaseEntity {
         if(firstName == null || firstName.isBlank()) throw new IllegalArgumentException("firstName must have a value");
         this.lastName= lastName.strip();
         this.firstName = firstName.strip();
+    }
+
+    // ---- Collection getters ----
+
+    protected Set<Ticket> getTickets() {
+        return Collections.unmodifiableSet(tickets);
     }
 
     // ---- Customer -> Profile relationship ----
