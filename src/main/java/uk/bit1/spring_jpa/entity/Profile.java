@@ -16,8 +16,12 @@ public class Profile extends BaseEntity {
     @Getter  // no setter by design
     private Long id;
 
+    // child/owner side
     @Getter(AccessLevel.PACKAGE)  // no setter by design
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(
+            fetch = FetchType.LAZY,
+            optional = false
+    )
     @MapsId
     @JoinColumn(name = "customer_id", nullable = false, unique = true)
     private Customer customer;

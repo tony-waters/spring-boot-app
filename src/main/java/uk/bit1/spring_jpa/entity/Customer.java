@@ -21,15 +21,19 @@ public class Customer extends BaseEntity {
     @Getter  // no setter by design
     private Long id;
 
+    // parent/inverse side
     @Getter // no setter by design
     @OneToOne(
             mappedBy = "customer",
+            // TODO: this is redundant?
+            fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             optional = true
     )
     private Profile profile;
 
+    // parent / inverse side
     // unmodifiable getter below - no setter for Collection by design
     @OneToMany(
             mappedBy = "customer",

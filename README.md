@@ -26,9 +26,36 @@ domain model ER diagram here.
 ## The Customer entity
 For demonstration purposes the Customer entity contains a small amount of mutable data - the Customers name.
 Additional information about the Customer is held in the Profile entity (display name, and marketing options).
-A Customer owns a single Profile so has a @OneToOne relationship with its Profile.
+A Customer has a single Profile and a Profile belongs to one Customer. 
+So Customer has a @OneToOne relationship with its Profile.
+
+Customers can have multiple Tickets and a Ticket belongs to a single Customer.
+So Customer has a @OneToMany relationship with Ticket.
+
+Let's look at the @OneToMany Customer->Ticket relationship first.
+These are usually the most straightforward to understand.
+
+### Customer @OneToMany relationship with Ticket
+In order to maintain a @OneToMany relationship in a database table we usually want the Many side of the 
+relationship to have a column which holds the primary key of the One side
+(called the 'foreign key' in this context).
+The database table / Entity holding this foreign key is called the 'Owning' side, with the other side 
+called the 'Inverse' side.
+This makes sense as the Profile entity table 'knows' what Customer it has,
+while the same cannot be said of the Customer table (without a SELECT).
+This leans towards a database-centric view of the relationship.
+
+A more java-centric way of looking at things is Parent/Child.
+Here the parent (Customer) is the logical owner of the relationship, 
+even though the foreign key resides in the child (Profile) table.
+For Parent/Child relationships it seems implied that the Parent would be in control of
+the relationship - for example having methods for adding/removing Children.
+Again this makes sense, particularly when we think of Children as a Collection within the Parent class.
 
 
+
+
+### Customer @OneToOne relationship with Profile
 
 
 ### inheriting from a BaseEntity
