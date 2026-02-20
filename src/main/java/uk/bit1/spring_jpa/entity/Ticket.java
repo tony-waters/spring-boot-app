@@ -52,8 +52,9 @@ public class Ticket extends BaseEntity {
 
     // ---- Constructors ----
 
-    // do not instantiate directly
-    // use Customer.raiseTicket() instead
+    // Ticket must not exist independently of Customer
+    // so constructor hidden using package-private access
+    // ... use Customer.raiseTicket() instead
     Ticket(String description) {
         if (description == null) throw new IllegalArgumentException("Description cannot be null");
         String stripped =  description.strip();

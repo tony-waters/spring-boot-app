@@ -34,8 +34,9 @@ public class Profile extends BaseEntity {
 
     // ---- Constructors ----
 
-    // Profile cannot exist independently of Customer.
-    // Use Customer.createProfile() to create a new Profile
+    // Profile must not exist independently of Customer
+    // so constructor hidden using package-private access
+    // ... use Customer.createProfile() instead
     Profile(String displayName, boolean marketingOptIn) {
         if(displayName == null || displayName.isBlank())
             throw new IllegalArgumentException("Display name must not be blank");
