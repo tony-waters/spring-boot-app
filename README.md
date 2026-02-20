@@ -41,16 +41,23 @@ relationship to have a column which holds the primary key of the One side
 (called the 'foreign key' in this context).
 The database table / Entity holding this foreign key is called the 'Owning' side, with the other side 
 called the 'Inverse' side.
-This makes sense as the Profile entity table 'knows' what Customer it has,
+This makes sense as the Ticket entity table 'knows' what Customer it has,
 while the same cannot be said of the Customer table (without a SELECT).
 This leans towards a database-centric view of the relationship.
+It describes how a bidirectional relationship is managed in the database.
 
 A more java-centric way of looking at things is Parent/Child.
 Here the parent (Customer) is the logical owner of the relationship, 
-even though the foreign key resides in the child (Profile) table.
+even though the foreign key resides in the child (Ticket) table.
 For Parent/Child relationships it seems implied that the Parent would be in control of
 the relationship - for example having methods for adding/removing Children.
 Again this makes sense, particularly when we think of Children as a Collection within the Parent class.
+
+So Owner/Inverse defines the management of the relationship in the database,
+while Parent/Child is the relationship in terms of the Object model.
+
+Typically, a @OneToMany relationship will have the @One side as the Parent
+and the @Many side as the Owner.
 
 
 
