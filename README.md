@@ -46,15 +46,18 @@ while the same cannot be said of the Customer table (without a SELECT).
 This leans towards a database-centric view of the relationship.
 It describes how a bidirectional relationship is managed in the database.
 
-A more java-centric way of looking at things is Parent/Child.
+A more java-centric way of looking at @OneToMany relationships is Parent/Child.
 Here the parent (Customer) is the logical owner of the relationship, 
-even though the foreign key resides in the child (Ticket) table.
-For Parent/Child relationships it seems implied that the Parent would be in control of
-the relationship - for example having methods for adding/removing Children.
+even if the foreign key resides in the child (Ticket) table.
+For Parent/Child relationships the Parent would be in control of
+the relationship - for example having methods for adding and removing Children.
 Again this makes sense, particularly when we think of Children as a Collection within the Parent class.
 
-So Owner/Inverse defines the management of the relationship in the database,
+So Owning Side/Inverse Side defines the management of the relationship in the database,
 while Parent/Child is the relationship in terms of the Object model.
+We are dealing with an Object-Relation Mapping framework here,
+so it makes sense that we will be dealing with both the Database perspective (Owner/Inverse)
+and the Object perspective (Parent/Child) here in our Entity classes.
 
 Typically, a @OneToMany relationship will have the @One side as the Parent
 and the @Many side as the Owner. So in Customer we have:
@@ -71,7 +74,9 @@ and the @Many side as the Owner. So in Customer we have:
 
 Let's break this down.
 
-mappedBy = "customer" : makes relationship bidirectional
+mappedBy = "customer" : lives on the inverse side of the relationship and makes the relationship bidirectional.
+'mappedBy' points to the 
+
 
 'orphanRemoval = true' lives in the Parent entity.
 It automatically deletes a child entity from the database when it is
@@ -132,16 +137,67 @@ Unmodifiable Collections.
     }
 </pre>
 l
-This approach has been implemented in akk of the entities.
+This approach has been implemented in all of the entities.
 There are some subtle differences though that are worth noting when it comes to @OneToOne and @ManyToMany.
-n
+
 ### Ticket @ManyToMany relationship with Tag
 Lets turn our attention to the Ticket->Tag @ManyToMany relationship.
 Since we need to create a JOIN table here
-the Owner will be which ever side defines the JOIN table,
+the Owning side will be which ever side takes charge of maintaining and updating the JOIN table,
 Since we will logically add or remove Tags to/from a Ticket, 
-it makes sense to make Ticket both Parent and Owner.
+it makes sense to make Ticket the Owner.
 
+Parent/Child makes less sense in a @ManyToMany relationship since both sides must hold a Collection.
+
+Here is what the Ticket->Tag looks like in Ticket:
+
+<pre>
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "ticket_tag",
+            joinColumns = @JoinColumn(name = "ticket_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags = new HashSet<>();
+</pre>
+
+... and the Inverse side in Tag:
+
+<pre>
+    @ManyToMany(mappedBy = "tags")
+    private Set<Ticket> tickets = new HashSet<>();
+</pre>
+
+We control the mutation of the Ticket.tags Collection through Ticket:
+
+<pre>
+    public void addTag(Tag tag) {
+        requireEditable("addTag");
+        if (tag == null) return; // addTag should be idempotent
+        if (tags.add(tag)) {
+            tag.addTicketInternal(this);
+        }
+    }
+
+    public void removeTag(Tag tag) {
+        requireEditable("removeTag");
+        if (tag == null) return; // removeTag should be idempotent
+        if (tags.remove(tag)) {
+            tag.removeTicketInternal(this);
+        }
+    }
+
+    public void clearTags() {
+        requireEditable("clearTags");
+        for (Tag tag : new HashSet<>(tags)) {
+            removeTag(tag);
+        }
+    }
+</pre>
+
+As before, we prevent mutation of the Ticket->Tag relationship by making the Ticket
+constructor package-private, not providing setters, and making Collection getters return
+Unmodifiable Collections.
 
 ### Customer @OneToOne relationship with Profile
 

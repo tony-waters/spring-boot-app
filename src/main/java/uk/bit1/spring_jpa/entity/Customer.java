@@ -23,18 +23,32 @@ public class Customer extends BaseEntity {
 
     // parent/inverse side
     @Getter // no setter by design
+//    @OneToOne(
+//            mappedBy = "customer",
+//            // TODO: this is redundant?
+//            fetch = FetchType.LAZY,
+//            cascade = CascadeType.ALL,
+//            orphanRemoval = true,
+//            optional = true
+//    )
     @OneToOne(
-            mappedBy = "customer",
-            // TODO: this is redundant?
             fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
             orphanRemoval = true,
+            cascade = CascadeType.ALL,
             optional = true
     )
+    @JoinColumn(name = "profile_id")
     private Profile profile;
 
     // parent / inverse side
     // unmodifiable getter below - no setter for Collection by design
+    @OneToMany(
+            mappedBy = "customer", // FK is in the Tickets table
+            orphanRemoval = true,
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY
+    )
+    private Set<Ticket> tickets = new HashSet<>();
 
     @Getter // no setter by design
     @NotBlank
@@ -49,13 +63,6 @@ public class Customer extends BaseEntity {
     private String firstName;
 
     // ---- Constructors ----
-    @OneToMany(
-            mappedBy = "customer",
-            orphanRemoval = true,
-            cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY
-    )
-    private Set<Ticket> tickets = new HashSet<>();
 
     public Customer(String lastName, String firstName) {
         if(lastName == null || lastName.isBlank()) throw new IllegalArgumentException("lastName must have a value");

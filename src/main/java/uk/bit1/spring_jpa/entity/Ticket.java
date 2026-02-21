@@ -30,7 +30,7 @@ public class Ticket extends BaseEntity {
             fetch = FetchType.LAZY,
             optional = false
     )
-    @JoinColumn(
+    @JoinColumn( // FK is here
             name = "customer_id",
             nullable = false
     )
