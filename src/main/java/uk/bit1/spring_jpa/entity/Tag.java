@@ -23,13 +23,13 @@ public class Tag extends BaseEntity {
     @Getter  // no setter by design
     private Long id;
 
-    @Getter // no setter by design
-    @Column(name = "name", nullable = false, length = 50)
-    private String name;
-
     // unmodifiable getter below - no setter on Collection by design
     @ManyToMany(mappedBy = "tags")
     private Set<Ticket> tickets = new HashSet<>();
+
+    @Getter // no setter by design
+    @Column(name = "name", nullable = false, length = 50)
+    private String name;
 
     // ---- Constructors ----
 

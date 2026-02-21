@@ -134,11 +134,18 @@ Unmodifiable Collections.
 l
 This approach has been implemented in akk of the entities.
 There are some subtle differences though that are worth noting when it comes to @OneToOne and @ManyToMany.
+n
+### Ticket @ManyToMany relationship with Tag
+Lets turn our attention to the Ticket->Tag @ManyToMany relationship.
+Since we need to create a JOIN table here
+the Owner will be which ever side defines the JOIN table,
+Since we will logically add or remove Tags to/from a Ticket, 
+it makes sense to make Ticket both Parent and Owner.
+
 
 ### Customer @OneToOne relationship with Profile
 
 
-### Ticket @ManyToMany relationship with Tag
 
 
 

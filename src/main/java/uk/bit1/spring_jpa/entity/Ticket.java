@@ -25,7 +25,7 @@ public class Ticket extends BaseEntity {
     @Getter  // no setter by design
     private Long id;
 
-    @Getter(AccessLevel.PACKAGE)// no setter by design
+    @Getter(AccessLevel.PACKAGE) // no setter by design
     @ManyToOne(
             fetch = FetchType.LAZY,
             optional = false
