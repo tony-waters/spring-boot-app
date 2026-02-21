@@ -26,8 +26,14 @@ public class Ticket extends BaseEntity {
     private Long id;
 
     @Getter(AccessLevel.PACKAGE)// no setter by design
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @ManyToOne(
+            fetch = FetchType.LAZY,
+            optional = false
+    )
+    @JoinColumn(
+            name = "customer_id",
+            nullable = false
+    )
     private Customer customer;
 
     // unmodifiable getter below, no setter by design

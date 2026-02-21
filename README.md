@@ -57,7 +57,81 @@ So Owner/Inverse defines the management of the relationship in the database,
 while Parent/Child is the relationship in terms of the Object model.
 
 Typically, a @OneToMany relationship will have the @One side as the Parent
-and the @Many side as the Owner.
+and the @Many side as the Owner. So in Customer we have:
+
+<pre>
+    @OneToMany(
+            mappedBy = "customer",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private Set<Ticket> tickets = new HashSet<>();
+</pre>
+
+Let's break this down.
+
+mappedBy = "customer" : makes relationship bidirectional
+
+'orphanRemoval = true' lives in the Parent entity.
+It automatically deletes a child entity from the database when it is
+removed from the Parent collection
+i.e. something like parent.getChildren().remove(child).
+So here we say to delete Ticket records in the database when they are removed from the 
+Customer.tickets collection.
+
+'cascade = CascadeType.ALL' : 
+
+'fetch = FetchType.LAZY' : 
+
+... and in Ticket:
+
+<pre>
+    @ManyToOne(
+            fetch = FetchType.LAZY, 
+            optional = false
+    )
+    @JoinColumn(
+            name = "customer_id", 
+            nullable = false
+    )
+    private Customer customer;
+</pre>
+
+In this type of @OneToMany relationship the Parent (Customer) is the place to
+put the methods that manipulate the Customer->Ticket relationship.
+We provide a methods to create and remove Tickets from the current Customer:
+
+<pre>
+    public Ticket raiseTicket(String description) {
+        if(description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be null");
+        Ticket ticket = new Ticket(description.strip());
+        addTicketInternal(ticket);
+        return ticket;
+    }
+
+    public void removeTicket(Ticket ticket) {
+        if(ticket == null) throw new IllegalArgumentException("Ticket must not be null");
+        // Object comparison like "ticket.getCustomer() != this" will not work properly
+        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
+        // ... need to ensure use of 'equals()' method '!this.equals(customer)'
+        if (!this.equals(ticket.getCustomer())) {
+            throw new IllegalArgumentException("Ticket does not belong to this Customer");
+        }
+        removeTicketInternal(ticket);
+    }
+</pre>
+
+While in the Ticket class we prevent mutation of the relationship by making the 
+constructor package-private, not providing setters, and making Collection getters return 
+Unmodifiable Collections.
+
+<pre>
+    Set<Ticket> getTickets() {
+        return Collections.unmodifiableSet(tickets);
+    }
+</pre>
+
 
 
 
