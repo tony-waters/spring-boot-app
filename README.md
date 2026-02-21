@@ -131,12 +131,16 @@ Unmodifiable Collections.
         return Collections.unmodifiableSet(tickets);
     }
 </pre>
-
-
-
-
+l
+This approach has been implemented in akk of the entities.
+There are some subtle differences though that are worth noting when it comes to @OneToOne and @ManyToMany.
 
 ### Customer @OneToOne relationship with Profile
+
+
+### Ticket @ManyToMany relationship with Tag
+
+
 
 
 ### inheriting from a BaseEntity
