@@ -21,23 +21,16 @@ public class Customer extends BaseEntity {
     @Getter  // no setter by design
     private Long id;
 
-    // parent/inverse side
+    // Owning side
     @Getter // no setter by design
-//    @OneToOne(
-//            mappedBy = "customer",
-//            // TODO: this is redundant?
-//            fetch = FetchType.LAZY,
-//            cascade = CascadeType.ALL,
-//            orphanRemoval = true,
-//            optional = true
-//    )
     @OneToOne(
             fetch = FetchType.LAZY,
             orphanRemoval = true,
             cascade = CascadeType.ALL,
             optional = true
     )
-    @JoinColumn(name = "profile_id")
+    @MapsId
+    @JoinColumn(name = "id") // Owning side is here
     private Profile profile;
 
     // parent / inverse side
@@ -52,23 +45,20 @@ public class Customer extends BaseEntity {
 
     @Getter // no setter by design
     @NotBlank
-    @Size(min = 2, max = 50)
-    @Column(name = "last_name", length = 50, nullable = false)
-    private String lastName;
-
-    @Getter // no setter by design
-    @NotBlank
-    @Size(min = 2, max = 50)
-    @Column(name = "first_name", length = 50, nullable = false)
-    private String firstName;
+    @Size(min = 2, max = 80)
+    @Column(name = "display_name", length = 80, nullable = false)
+    private String displayName;
 
     // ---- Constructors ----
 
-    public Customer(String lastName, String firstName) {
-        if(lastName == null || lastName.isBlank()) throw new IllegalArgumentException("lastName must have a value");
-        if(firstName == null || firstName.isBlank()) throw new IllegalArgumentException("firstName must have a value");
-        this.lastName= lastName.strip();
-        this.firstName = firstName.strip();
+    public Customer(String displayName, String firstName) {
+        if(displayName == null || displayName.isBlank()) {
+            throw new IllegalArgumentException("lastName must have a value");
+        }
+        if(firstName == null || firstName.isBlank()) {
+            throw new IllegalArgumentException("firstName must have a value");
+        }
+        this.displayName = displayName.strip();
     }
 
     // ---- Collection getters ----
@@ -79,34 +69,43 @@ public class Customer extends BaseEntity {
 
     // ---- Customer -> Profile relationship ----
 
-    // Customer has control of Customer-Profile relationship changes (despite Profile being the Owner side)
-    public void createProfile(String displayName, boolean marketingOptIn) {
-        if (displayName == null || displayName.isBlank()) throw new IllegalArgumentException("Display name must not be null");
-        if (this.profile != null) throw new IllegalStateException("Customer already has a Profile");
+    // Customer has lifecycle control of Customer-Profile relationship
+    public Profile createProfile(String displayName, boolean marketingOptIn) {
+        if (displayName == null || displayName.isBlank()) {
+            throw new IllegalArgumentException("Display name must not be null");
+        }
+        if (this.profile != null) {
+            throw new IllegalStateException("Customer already has a Profile");
+        }
         Profile profile = new Profile(displayName.strip(), marketingOptIn);
         this.profile = profile;
-        profile.setCustomerInternal(this);
+        return profile;
     }
 
     public void removeProfile() {
-        if (this.profile == null) throw new IllegalStateException("Customer has no Profile to remove");
+        if (this.profile == null) {
+            throw new IllegalStateException("Customer has no Profile to remove");
+        }
         Profile old = this.profile;
         this.profile = null;
-        old.clearCustomerInternal();
     }
 
     // ---- Customer -> Ticket relationship ----
 
-    // Customer has control of Customer-Ticket relationship changes (despite Ticket being the Owner side)
+    // Customer has lifecycle control of Customer-Ticket relationship
     public Ticket raiseTicket(String description) {
-        if(description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be null");
+        if(description == null || description.isBlank()) {
+            throw new IllegalArgumentException("Description must not be null");
+        }
         Ticket ticket = new Ticket(description.strip());
         addTicketInternal(ticket);
         return ticket;
     }
 
     public void removeTicket(Ticket ticket) {
-        if(ticket == null) throw new IllegalArgumentException("Ticket must not be null");
+        if(ticket == null) {
+            throw new IllegalArgumentException("Ticket must not be null");
+        }
         // Object comparison like "ticket.getCustomer() != this" will not work properly
         // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
         // ... need to ensure use of 'equals()' method '!this.equals(customer)'
@@ -149,17 +148,21 @@ public class Customer extends BaseEntity {
     // ---- State transition ----
 
     public void changeName(String firstName, String lastName) {
-        if(firstName == null || firstName.isBlank()) throw new IllegalArgumentException("firstName must have a value");
-        if (lastName == null || lastName.isBlank()) throw new IllegalArgumentException("lastName must have a value");
-        this.firstName = firstName.strip();
-        this.lastName = lastName.strip();
+        if(firstName == null || firstName.isBlank()) {
+            throw new IllegalArgumentException("firstName must have a value");
+        }
+        if (lastName == null || lastName.isBlank()) {
+            throw new IllegalArgumentException("lastName must have a value");
+        }
+//        this.firstName = firstName.strip();
+        this.displayName = lastName.strip();
     }
 
     // ---- General ----
 
     @Override
     public String toString() {
-        return "Customer{id=" + getId() + ", firstName=" + firstName + ", lastName=" + lastName + "}";
+        return "Customer{id=" + getId()  + ", lastName=" + displayName + "}";
     }
 
 }

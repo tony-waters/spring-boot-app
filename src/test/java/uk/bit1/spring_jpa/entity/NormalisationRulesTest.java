@@ -15,12 +15,12 @@ class NormalisationRulesTest {
     @Test
     void customerNamesAreStripped() {
         Customer c = new Customer("  Waters  ", "  Tony  ");
-        assertThat(c.getLastName()).isEqualTo("Waters");
-        assertThat(c.getFirstName()).isEqualTo("Tony");
+        assertThat(c.getDisplayName()).isEqualTo("Waters");
+//        assertThat(c.getFirstName()).isEqualTo("Tony");
 
         c.changeName("  Tobes  ", "  Waters  ");
-        assertThat(c.getFirstName()).isEqualTo("Tobes");
-        assertThat(c.getLastName()).isEqualTo("Waters");
+//        assertThat(c.getFirstName()).isEqualTo("Tobes");
+        assertThat(c.getDisplayName()).isEqualTo("Waters");
     }
 
     @Test
@@ -36,9 +36,9 @@ class NormalisationRulesTest {
         Customer c = new Customer("Waters", "Tony");
         c.createProfile("  TonyW  ", false);
 
-        assertThat(c.getProfile().getDisplayName()).isEqualTo("TonyW");
+        assertThat(c.getProfile().getEmailAddress()).isEqualTo("TonyW");
 
-        c.getProfile().changeDisplayName("  NewName  ");
-        assertThat(c.getProfile().getDisplayName()).isEqualTo("NewName");
+        c.getProfile().changeEmailAddress("  NewName  ");
+        assertThat(c.getProfile().getEmailAddress()).isEqualTo("NewName");
     }
 }

@@ -34,8 +34,9 @@ public class Tag extends BaseEntity {
     // ---- Constructors ----
 
     public Tag(String name) {
-        if (name == null || name.isBlank())
+        if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Tag name must not be blank");
+        }
         // strip and normailise to lower case
         this.name = name.strip().toLowerCase();
     }

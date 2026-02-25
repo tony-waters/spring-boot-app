@@ -1,3 +1,4 @@
+
 package uk.bit1.spring_jpa.entity;
 
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ class CustomerProfileMappingDataJpaTest {
         Profile p = profileRepository.findById(customerId).orElseThrow();
 
         assertThat(p.getId()).isEqualTo(customerId);
-        assertThat(p.getDisplayName()).isEqualTo("TonyW");
+        assertThat(p.getEmailAddress()).isEqualTo("TonyW");
         assertThat(p.isMarketingOptIn()).isTrue();
     }
 

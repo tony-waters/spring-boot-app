@@ -22,6 +22,9 @@ domain model ER diagram here.
 
 ## The BaseEntity
 
+### Modelling @OneToMany, @ManyToMany, and @OneToOne relationships
+We will be modelling three relationships in our Entities:
+- Cus
 
 ## The Customer entity
 For demonstration purposes the Customer entity contains a small amount of mutable data - the Customers name.
@@ -35,7 +38,8 @@ So Customer has a @OneToMany relationship with Ticket.
 Let's look at the @OneToMany Customer->Ticket relationship first.
 These are usually the most straightforward to understand.
 
-### Customer @OneToMany relationship with Ticket
+
+### Customer @OneToMany relationship with Ticket (Bidirectional, Owning side is Ticket)
 In order to maintain a @OneToMany relationship in a database table we usually want the Many side of the 
 relationship to have a column which holds the primary key of the One side
 (called the 'foreign key' in this context).
@@ -140,7 +144,7 @@ l
 This approach has been implemented in all of the entities.
 There are some subtle differences though that are worth noting when it comes to @OneToOne and @ManyToMany.
 
-### Ticket @ManyToMany relationship with Tag
+### Ticket @ManyToMany relationship with Tag (Bidirectional, Owning side is Ticket)
 Lets turn our attention to the Ticket->Tag @ManyToMany relationship.
 Since we need to create a JOIN table here
 the Owning side will be which ever side takes charge of maintaining and updating the JOIN table,
@@ -199,7 +203,7 @@ As before, we prevent mutation of the Ticket->Tag relationship by making the Tic
 constructor package-private, not providing setters, and making Collection getters return
 Unmodifiable Collections.
 
-### Customer @OneToOne relationship with Profile
+### Customer @OneToOne relationship with Profile (Unidirectional, Owning side is Customer)
 
 
 

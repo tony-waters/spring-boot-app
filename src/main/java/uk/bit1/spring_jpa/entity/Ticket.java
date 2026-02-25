@@ -30,7 +30,7 @@ public class Ticket extends BaseEntity {
             fetch = FetchType.LAZY,
             optional = false
     )
-    @JoinColumn( // FK is here
+    @JoinColumn( // Owning side is here
             name = "customer_id",
             nullable = false
     )
@@ -38,7 +38,7 @@ public class Ticket extends BaseEntity {
 
     // unmodifiable getter below, no setter by design
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
+    @JoinTable( // Owning side is here
             name = "ticket_tag",
             joinColumns = @JoinColumn(name = "ticket_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
@@ -62,7 +62,9 @@ public class Ticket extends BaseEntity {
     // so constructor hidden using package-private access
     // ... use Customer.raiseTicket() instead
     Ticket(String description) {
-        if (description == null) throw new IllegalArgumentException("Description cannot be null");
+        if (description == null) {
+            throw new IllegalArgumentException("Description cannot be null");
+        }
         String stripped =  description.strip();
         if(stripped.isBlank() || stripped.length() <10) {
             throw new IllegalArgumentException("Description must be at least 10 characters");
@@ -81,7 +83,9 @@ public class Ticket extends BaseEntity {
     // (public access to relationship handled by Customer entity)
 
     void setCustomerInternal(Customer customer) {
-        if (customer == null) throw new IllegalArgumentException("Ticket must have a Customer");
+        if (customer == null) {
+            throw new IllegalArgumentException("Ticket must have a Customer");
+        }
 
         // Object comparison like "this.customer != customer" will not work properly
         // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
