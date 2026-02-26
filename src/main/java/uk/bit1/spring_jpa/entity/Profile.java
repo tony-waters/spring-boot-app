@@ -30,7 +30,7 @@ public class Profile extends BaseEntity {
 
     // ---- Constructors ----
 
-    // Profile must not exist independently of Customer
+    // Customer controls lifecycle of Customer->Profile
     // so constructor hidden using package-private access
     // ... use Customer.createProfile() instead
     Profile(String emailAddress, boolean marketingOptIn) {
