@@ -8,7 +8,7 @@ class TicketStateMachineTest {
 
     @Test
     void newTicketStartsOpen() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         assertThat(t.getStatus()).isEqualTo(TicketStatus.OPEN);
@@ -17,7 +17,7 @@ class TicketStateMachineTest {
 
     @Test
     void startWorkTransitionsOpenToInProgress() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         t.startWork();
@@ -27,7 +27,7 @@ class TicketStateMachineTest {
 
     @Test
     void resolveTransitionsOpenOrInProgressToResolved() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
 
         Ticket t1 = c.raiseTicket("This is a valid description.");
         t1.resolve();
@@ -41,7 +41,7 @@ class TicketStateMachineTest {
 
     @Test
     void reopenTransitionsResolvedToOpen() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         t.resolve();
@@ -52,7 +52,7 @@ class TicketStateMachineTest {
 
     @Test
     void closeTransitionsResolvedToClosed() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         t.resolve();
@@ -63,7 +63,7 @@ class TicketStateMachineTest {
 
     @Test
     void cannotCloseUnlessResolved() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         assertThatThrownBy(t::close)
@@ -73,7 +73,7 @@ class TicketStateMachineTest {
 
     @Test
     void cannotStartWorkUnlessOpen() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         t.resolve();
@@ -85,7 +85,7 @@ class TicketStateMachineTest {
 
     @Test
     void cannotResolveWhenClosed() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         t.resolve();
@@ -98,7 +98,7 @@ class TicketStateMachineTest {
 
     @Test
     void changeDescriptionStripsAndBlocksBlank() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         t.changeDescription("   Updated description.   ");
@@ -112,7 +112,7 @@ class TicketStateMachineTest {
 
     @Test
     void changeDescriptionBlockedWhenResolvedAndClosed() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         t.resolve();
@@ -130,7 +130,7 @@ class TicketStateMachineTest {
 
     @Test
     void descriptionMustMeetMinLengthIfYouEnforceIt() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
 
         // If you implement min length check (recommended to match @Size(min=10)):
         assertThatThrownBy(() -> c.raiseTicket("Too short"))

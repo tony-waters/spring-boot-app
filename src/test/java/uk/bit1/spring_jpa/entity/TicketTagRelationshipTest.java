@@ -8,7 +8,7 @@ class TicketTagRelationshipTest {
 
     @Test
     void addTagIsIdempotentAndMaintainsBothSides() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         Tag tag = new Tag("  Urgent  "); // normalises to "urgent"
@@ -23,7 +23,7 @@ class TicketTagRelationshipTest {
 
     @Test
     void removeTagIsIdempotentAndMaintainsBothSides() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         Tag tag = new Tag("urgent");
@@ -41,7 +41,7 @@ class TicketTagRelationshipTest {
 
     @Test
     void clearTagsRemovesAllAndMaintainsBothSides() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         Tag a = new Tag("a");

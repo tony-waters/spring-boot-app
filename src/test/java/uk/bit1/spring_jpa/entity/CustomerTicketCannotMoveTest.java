@@ -10,8 +10,8 @@ class CustomerTicketCannotMoveTest {
 
     @Test
     void ticketCannotBeMovedBetweenCustomers() throws Exception {
-        Customer a = new Customer("Waters", "Tony");
-        Customer b = new Customer("Smith", "John");
+        Customer a = new Customer("tonyW");
+        Customer b = new Customer("johnS");
 
         Ticket t = a.raiseTicket("This is a valid description.");
 

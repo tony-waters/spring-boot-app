@@ -19,7 +19,7 @@ public class Profile extends BaseEntity {
     @Getter  // no setter by design
     @NotBlank
     @Size(min = 2, max = 50)
-    @Column(name = "email_Address", length = 50, nullable = false, unique = true)
+    @Column(name = "email_address", length = 50, nullable = false, unique = true)
     private String emailAddress;
 
     @Getter  // no setter by design
@@ -33,7 +33,7 @@ public class Profile extends BaseEntity {
     // ... use Customer.createProfile() instead
     Profile(String emailAddress, boolean marketingOptIn) {
         if(emailAddress == null || emailAddress.isBlank()) {
-            throw new IllegalArgumentException("Email must not be blank");
+            throw new IllegalArgumentException("emailAddress must not be blank");
         }
         this.emailAddress = emailAddress.strip();
         this.marketingOptIn = marketingOptIn;
@@ -46,7 +46,7 @@ public class Profile extends BaseEntity {
             return; // throw an error here if we enforce 'change' in domain
         }
         if(newEmailAddress == null || newEmailAddress.isBlank()) {
-            throw new IllegalArgumentException("Email must not be blank");
+            throw new IllegalArgumentException("emailAddress must not be blank");
         }
         this.emailAddress = newEmailAddress.strip();
     }

@@ -14,18 +14,16 @@ class NormalisationRulesTest {
 
     @Test
     void customerNamesAreStripped() {
-        Customer c = new Customer("  Waters  ", "  Tony  ");
-        assertThat(c.getDisplayName()).isEqualTo("Waters");
-//        assertThat(c.getFirstName()).isEqualTo("Tony");
+        Customer c = new Customer("  tonyW  ");
+        assertThat(c.getDisplayName()).isEqualTo("tonyW");
 
-        c.changeName("  Tobes  ", "  Waters  ");
-//        assertThat(c.getFirstName()).isEqualTo("Tobes");
-        assertThat(c.getDisplayName()).isEqualTo("Waters");
+        c.changeDisplayName("  johnW  ");
+        assertThat(c.getDisplayName()).isEqualTo("johnW");
     }
 
     @Test
     void ticketDescriptionIsStripped() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("  This is a valid description.  ");
 
         assertThat(t.getDescription()).isEqualTo("This is a valid description.");
@@ -33,7 +31,7 @@ class NormalisationRulesTest {
 
     @Test
     void profileDisplayNameIsStripped() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         c.createProfile("  TonyW  ", false);
 
         assertThat(c.getProfile().getEmailAddress()).isEqualTo("TonyW");

@@ -8,7 +8,7 @@ class TicketTagMutabilityRulesTest {
 
     @Test
     void tagsCanBeEditedWhenOpenOrInProgress() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         Tag urgent = new Tag("urgent");
@@ -30,7 +30,7 @@ class TicketTagMutabilityRulesTest {
 
     @Test
     void tagsCannotBeEditedWhenResolved() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
         Tag urgent = new Tag("urgent");
 
@@ -51,7 +51,7 @@ class TicketTagMutabilityRulesTest {
 
     @Test
     void tagsCannotBeEditedWhenClosed() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
         Tag urgent = new Tag("urgent");
 
@@ -73,7 +73,7 @@ class TicketTagMutabilityRulesTest {
 
     @Test
     void reopeningMakesTagsEditableAgain() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
         Tag urgent = new Tag("urgent");
 

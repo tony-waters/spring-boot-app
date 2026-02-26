@@ -16,7 +16,7 @@ class CustomerTicketOrphanRemovalDataJpaTest {
 
     @Test
     void raiseTicketPersistsViaCascade() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         Customer saved = customerRepository.saveAndFlush(c);
@@ -32,7 +32,7 @@ class CustomerTicketOrphanRemovalDataJpaTest {
 
     @Test
     void removingTicketDeletesOrphanRow() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         Customer saved = customerRepository.saveAndFlush(c);

@@ -25,12 +25,14 @@ public class Customer extends BaseEntity {
     @Getter // no setter by design
     @OneToOne(
             fetch = FetchType.LAZY,
-            orphanRemoval = true,
             cascade = CascadeType.ALL,
+            orphanRemoval = true,
             optional = true
     )
-    @MapsId
-    @JoinColumn(name = "id") // Owning side is here
+    @JoinColumn( // Owning side is here
+            name = "profile_id",
+            unique = true // enforce 1-1 in DB
+    )
     private Profile profile;
 
     // parent / inverse side
@@ -51,12 +53,9 @@ public class Customer extends BaseEntity {
 
     // ---- Constructors ----
 
-    public Customer(String displayName, String firstName) {
+    public Customer(String displayName) {
         if(displayName == null || displayName.isBlank()) {
-            throw new IllegalArgumentException("lastName must have a value");
-        }
-        if(firstName == null || firstName.isBlank()) {
-            throw new IllegalArgumentException("firstName must have a value");
+            throw new IllegalArgumentException("displayName must have a value");
         }
         this.displayName = displayName.strip();
     }
@@ -70,14 +69,14 @@ public class Customer extends BaseEntity {
     // ---- Customer -> Profile relationship ----
 
     // Customer has lifecycle control of Customer-Profile relationship
-    public Profile createProfile(String displayName, boolean marketingOptIn) {
-        if (displayName == null || displayName.isBlank()) {
-            throw new IllegalArgumentException("Display name must not be null");
+    public Profile createProfile(String emailAddress, boolean marketingOptIn) {
+        if (emailAddress == null || emailAddress.isBlank()) {
+            throw new IllegalArgumentException("emailAddress must not be null");
         }
         if (this.profile != null) {
             throw new IllegalStateException("Customer already has a Profile");
         }
-        Profile profile = new Profile(displayName.strip(), marketingOptIn);
+        Profile profile = new Profile(emailAddress.strip(), marketingOptIn);
         this.profile = profile;
         return profile;
     }
@@ -86,7 +85,6 @@ public class Customer extends BaseEntity {
         if (this.profile == null) {
             throw new IllegalStateException("Customer has no Profile to remove");
         }
-        Profile old = this.profile;
         this.profile = null;
     }
 
@@ -147,22 +145,23 @@ public class Customer extends BaseEntity {
 
     // ---- State transition ----
 
-    public void changeName(String firstName, String lastName) {
-        if(firstName == null || firstName.isBlank()) {
-            throw new IllegalArgumentException("firstName must have a value");
+    public void changeDisplayName(String displayName) {
+        if (displayName == null || displayName.isBlank()) {
+            throw new IllegalArgumentException("displayName must have a value");
         }
-        if (lastName == null || lastName.isBlank()) {
-            throw new IllegalArgumentException("lastName must have a value");
-        }
-//        this.firstName = firstName.strip();
-        this.displayName = lastName.strip();
+        this.displayName = displayName.strip();
+    }
+
+    // package-private: for persistence / tests only
+    void attachProfileInternal(Profile profile) {
+        this.profile = profile;
     }
 
     // ---- General ----
 
     @Override
     public String toString() {
-        return "Customer{id=" + getId()  + ", lastName=" + displayName + "}";
+        return "Customer{id=" + getId()  + ", displayName=" + displayName + "}";
     }
 
 }

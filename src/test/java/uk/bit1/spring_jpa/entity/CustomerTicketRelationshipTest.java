@@ -8,7 +8,7 @@ class CustomerTicketRelationshipTest {
 
     @Test
     void raiseTicketSetsCustomerAndAddsToCustomerCollection() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
 
         Ticket t = c.raiseTicket("This is a valid description.");
 
@@ -18,8 +18,8 @@ class CustomerTicketRelationshipTest {
 
     @Test
     void removeTicketRemovesFromCollectionAndRejectsWrongOwner() {
-        Customer c1 = new Customer("Waters", "Tony");
-        Customer c2 = new Customer("Smith", "John");
+        Customer c1 = new Customer("tonyW");
+        Customer c2 = new Customer("johnS");
 
         Ticket t = c1.raiseTicket("This is a valid description.");
 
@@ -33,7 +33,7 @@ class CustomerTicketRelationshipTest {
 
     @Test
     void removeAllTicketsClearsCollection() {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         c.raiseTicket("This is a valid description.");
         c.raiseTicket("This is another valid description.");
 

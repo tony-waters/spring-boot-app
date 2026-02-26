@@ -16,38 +16,37 @@ class CustomerProfileMappingDataJpaTest {
     @Autowired ProfileRepository profileRepository;
 
     @Test
-    void creatingProfilePersistsAndSharesPrimaryKey() {
-        Customer c = new Customer("Waters", "Tony");
-        c.createProfile("TonyW", true);
+    void creatingProfilePersistsViaCascade_withIndependentIds() {
+        Customer c = new Customer("Tony");
+        Profile p = c.createProfile("tony@example.com", true);
 
         Customer saved = customerRepository.saveAndFlush(c);
-        Long customerId = saved.getId();
 
-        assertThat(customerId).isNotNull();
+        assertThat(saved.getId()).isNotNull();
+        assertThat(p.getId()).isNotNull();
 
-        // Profile uses @MapsId so Profile.id == Customer.id
-        assertThat(profileRepository.findById(customerId)).isPresent();
-        Profile p = profileRepository.findById(customerId).orElseThrow();
+        // NOT shared PK anymore
+        assertThat(p.getId()).isNotEqualTo(saved.getId());
 
-        assertThat(p.getId()).isEqualTo(customerId);
-        assertThat(p.getEmailAddress()).isEqualTo("TonyW");
-        assertThat(p.isMarketingOptIn()).isTrue();
+        Customer reloaded = customerRepository.findById(saved.getId()).orElseThrow();
+        assertThat(reloaded.getProfile()).isNotNull();
+        assertThat(reloaded.getProfile().getEmailAddress()).isEqualTo("tony@example.com");
+        assertThat(reloaded.getProfile().isMarketingOptIn()).isTrue();
     }
 
     @Test
     void removingProfileDeletesOrphanRow() {
-        Customer c = new Customer("Waters", "Tony");
-        c.createProfile("TonyW", false);
+        Customer c = new Customer("Tony");
+        Profile p = c.createProfile("tony@example.com", false);
 
         Customer saved = customerRepository.saveAndFlush(c);
-        Long customerId = saved.getId();
+        Long profileId = p.getId();
 
-        assertThat(profileRepository.findById(customerId)).isPresent();
+        assertThat(profileRepository.findById(profileId)).isPresent();
 
-        // remove + flush => orphanRemoval should delete profile row
         saved.removeProfile();
         customerRepository.saveAndFlush(saved);
 
-        assertThat(profileRepository.findById(customerId)).isNotPresent();
+        assertThat(profileRepository.findById(profileId)).isNotPresent();
     }
 }

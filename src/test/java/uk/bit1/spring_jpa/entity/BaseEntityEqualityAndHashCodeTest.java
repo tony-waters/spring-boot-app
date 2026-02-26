@@ -12,8 +12,8 @@ class BaseEntityEqualityAndHashCodeTest {
 
     @Test
     void transientEntitiesAreNotEqual() {
-        Customer a = new Customer("Waters", "Tony");
-        Customer b = new Customer("Waters", "Tony");
+        Customer a = new Customer("tonyW");
+        Customer b = new Customer("tonyW");
 
         // both ids null => should NOT be equal
         assertThat(a).isNotEqualTo(b);
@@ -22,8 +22,8 @@ class BaseEntityEqualityAndHashCodeTest {
 
     @Test
     void entitiesWithSameClassAndSameIdAreEqual() throws Exception {
-        Customer a = new Customer("Waters", "Tony");
-        Customer b = new Customer("Smith", "John");
+        Customer a = new Customer("tonyW");
+        Customer b = new Customer("johnS");
 
         setId(a, 42L);
         setId(b, 42L);
@@ -34,7 +34,7 @@ class BaseEntityEqualityAndHashCodeTest {
 
     @Test
     void entitiesWithDifferentClassSameIdAreNotEqual() throws Exception {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Tag t = new Tag("urgent");
 
         setId(c, 7L);
@@ -45,7 +45,7 @@ class BaseEntityEqualityAndHashCodeTest {
 
     @Test
     void hashCodeMustBeStableAcrossIdAssignmentBecauseWeUseSets() throws Exception {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
 
         int before = c.hashCode();
 
@@ -60,7 +60,7 @@ class BaseEntityEqualityAndHashCodeTest {
 
     @Test
     void setMembershipMustStillWorkAfterIdAssignment() throws Exception {
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Set<Customer> set = new HashSet<>();
         set.add(c);
 

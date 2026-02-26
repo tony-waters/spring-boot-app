@@ -21,7 +21,7 @@ class TicketTagJoinTableDataJpaTest {
         Tag urgent = tagRepository.saveAndFlush(new Tag("urgent"));
         Tag bug = tagRepository.saveAndFlush(new Tag("bug"));
 
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
 
         // persist customer+ticket first (cascade)
@@ -47,7 +47,7 @@ class TicketTagJoinTableDataJpaTest {
     void tagsCannotBeEditedAfterResolvedOrClosedEvenInJpaContext() {
         Tag urgent = tagRepository.saveAndFlush(new Tag("urgent"));
 
-        Customer c = new Customer("Waters", "Tony");
+        Customer c = new Customer("tonyW");
         Ticket t = c.raiseTicket("This is a valid description.");
         customerRepository.saveAndFlush(c);
 
