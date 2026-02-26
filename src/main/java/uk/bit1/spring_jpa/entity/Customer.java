@@ -88,6 +88,11 @@ public class Customer extends BaseEntity {
         this.profile = null;
     }
 
+    // package-private: for persistence / tests only
+    void attachProfileInternal(Profile profile) {
+        this.profile = profile;
+    }
+
     // ---- Customer -> Ticket relationship ----
 
     // Customer has lifecycle control of Customer-Ticket relationship
@@ -150,11 +155,6 @@ public class Customer extends BaseEntity {
             throw new IllegalArgumentException("displayName must have a value");
         }
         this.displayName = displayName.strip();
-    }
-
-    // package-private: for persistence / tests only
-    void attachProfileInternal(Profile profile) {
-        this.profile = profile;
     }
 
     // ---- General ----
