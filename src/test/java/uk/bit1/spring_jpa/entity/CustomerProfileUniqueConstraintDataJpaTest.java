@@ -24,12 +24,12 @@ class CustomerProfileUniqueConstraintDataJpaTest {
         assertThat(shared.getId()).isNotNull();
 
         // customer A points at shared profile
-        Customer a = new Customer("A");
+        Customer a = new Customer("Alice");
         a.attachProfileInternal(shared);
         customerRepository.saveAndFlush(a);
 
         // customer B tries to point at same shared profile -> should violate UNIQUE(profile_id)
-        Customer b = new Customer("B");
+        Customer b = new Customer("Bob");
         b.attachProfileInternal(shared);
 
         assertThatThrownBy(() -> customerRepository.saveAndFlush(b))

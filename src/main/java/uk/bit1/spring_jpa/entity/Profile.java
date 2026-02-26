@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 public class Profile extends BaseEntity {
 
     @Id
+    @SequenceGenerator(name="global_seq", sequenceName="global_seq", allocationSize=50)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="global_seq")
     @Getter  // no setter by design
     private Long id;
 
