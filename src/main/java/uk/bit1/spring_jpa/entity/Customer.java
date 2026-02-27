@@ -114,9 +114,6 @@ public class Customer extends BaseEntity {
         if(ticket == null) {
             throw new IllegalArgumentException("Ticket must not be null");
         }
-        // Object comparison like "ticket.getCustomer() != this" will not work properly
-        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
-        // ... need to ensure use of 'equals()' method '!this.equals(customer)'
         if (!this.equals(ticket.getCustomer())) {
             throw new IllegalArgumentException("Ticket does not belong to this Customer");
         }
@@ -132,9 +129,6 @@ public class Customer extends BaseEntity {
 
     private void addTicketInternal(Ticket ticket) {
         Customer existing = ticket.getCustomer();
-        // Object comparison like "<Entity> != this" will not work properly
-        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
-        // ... need to ensure use of 'equals()' method '!this.equals(existing)'
         if (existing != null && !this.equals(existing)) {
             throw new IllegalStateException("Cannot move Ticket between Customers. Delete and replace instead");
         }
@@ -148,9 +142,7 @@ public class Customer extends BaseEntity {
         if (!removed) {
             throw new IllegalStateException("Ticket was not in Customer.tickets (detached instance?)");
         }
-        // we do not null Ticket.customer to preserve 'nullable = false' in the Domain model.
-        // orphanRemoval will delete on flush
-        // ... will (should) be run within a @Transactional context in the Service layer
+        // orphanRemoval will delete on flush anyway
         ticket.removeCustomerInternal();
     }
 

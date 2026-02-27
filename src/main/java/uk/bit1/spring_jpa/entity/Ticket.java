@@ -86,10 +86,6 @@ public class Ticket extends BaseEntity {
         if (customer == null) {
             throw new IllegalArgumentException("Ticket must have a Customer");
         }
-
-        // Object comparison like "this.customer != customer" will not work properly
-        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
-        // ... need to ensure use of 'equals()' method '!this.customer.equals(customer)'
         if (this.customer != null && !this.customer.equals(customer)) {
             throw new IllegalStateException("Ticket customer cannot be changed - delete and recreate instead");
         }
