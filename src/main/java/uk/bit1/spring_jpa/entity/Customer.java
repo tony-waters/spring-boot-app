@@ -81,16 +81,21 @@ public class Customer extends BaseEntity {
         return profile;
     }
 
+    public void attachProfile(Profile profile) {
+        if(profile == null) {
+            throw new IllegalArgumentException("profile must not be null");
+        }
+        if (this.profile != null) {
+            throw new IllegalStateException("Customer already has a Profile");
+        }
+        this.profile = profile;
+    }
+
     public void removeProfile() {
         if (this.profile == null) {
             throw new IllegalStateException("Customer has no Profile to remove");
         }
         this.profile = null;
-    }
-
-    // package-private: for persistence / tests only
-    void attachProfileInternal(Profile profile) {
-        this.profile = profile;
     }
 
     // ---- Customer -> Ticket relationship ----

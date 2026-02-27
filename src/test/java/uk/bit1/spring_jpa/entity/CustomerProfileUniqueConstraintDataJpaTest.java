@@ -22,11 +22,11 @@ class CustomerProfileUniqueConstraintDataJpaTest {
         assertThat(shared.getId()).isNotNull();
 
         Customer a = new Customer("Alice");
-        a.attachProfileInternal(shared);
+        a.attachProfile(shared);
         customerRepository.saveAndFlush(a);
 
         Customer b = new Customer("Bob");
-        b.attachProfileInternal(shared);
+        b.attachProfile(shared);
 
         assertThatThrownBy(() -> {
             customerRepository.save(b);
