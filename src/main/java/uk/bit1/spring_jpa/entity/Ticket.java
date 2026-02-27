@@ -96,6 +96,10 @@ public class Ticket extends BaseEntity {
         this.customer = customer;
     }
 
+    void removeCustomerInternal() {
+        this.customer = null;
+    }
+
     // ---- Ticket -> Tag relationship ----
 
     public void addTag(Tag tag) {

@@ -151,6 +151,7 @@ public class Customer extends BaseEntity {
         // we do not null Ticket.customer to preserve 'nullable = false' in the Domain model.
         // orphanRemoval will delete on flush
         // ... will (should) be run within a @Transactional context in the Service layer
+        ticket.removeCustomerInternal();
     }
 
     // ---- State transition ----

@@ -32,7 +32,7 @@ public class Profile extends BaseEntity {
 
     // Customer controls lifecycle of Customer->Profile
     // so constructor hidden using package-private access
-    // ... use Customer.createProfile() instead
+    // ... use Customer.createProfile() or Customer.attachProfile() instead
     Profile(String emailAddress, boolean marketingOptIn) {
         if(emailAddress == null || emailAddress.isBlank()) {
             throw new IllegalArgumentException("emailAddress must not be blank");
