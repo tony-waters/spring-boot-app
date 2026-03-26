@@ -38,11 +38,11 @@ public class Customer extends BaseEntity {
         this.displayName = validateDisplayName(displayName);
     }
 
-    Profile getProfile() {
+    Profile getProfileInternal() {
         return profile;
     }
 
-    Set<Ticket> getTickets() {
+    Set<Ticket> getTicketsInternal() {
         return Collections.unmodifiableSet(tickets);
     }
 
@@ -74,6 +74,19 @@ public class Customer extends BaseEntity {
 
     public TicketStatus ticketStatus(Long ticketId) {
         return findTicket(ticketId).getStatus();
+    }
+
+    public boolean ticketHasTag(Long ticketId, Tag tag) {
+        Objects.requireNonNull(tag, "tag must not be null");
+        return findTicket(ticketId).getTags().contains(tag);
+    }
+
+    public int ticketTagCount(Long ticketId) {
+        return findTicket(ticketId).getTags().size();
+    }
+
+    public String ticketDescription(Long ticketId) {
+        return findTicket(ticketId).getDescription();
     }
 
     public void createProfile(String emailAddress, boolean marketingOptIn) {
@@ -143,10 +156,7 @@ public class Customer extends BaseEntity {
 
     public void removeTicket(Long ticketId) {
         Ticket ticket = findTicket(ticketId);
-        boolean removed = tickets.remove(ticket);
-        if (!removed) {
-            throw new IllegalStateException("Ticket was not present in customer");
-        }
+        tickets.remove(ticket);
         ticket.markRemovedFromCustomer();
     }
 

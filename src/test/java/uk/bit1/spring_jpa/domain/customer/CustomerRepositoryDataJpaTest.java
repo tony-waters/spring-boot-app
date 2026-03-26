@@ -47,9 +47,9 @@ class CustomerRepositoryDataJpaTest {
 
         Customer reloaded = customerRepository.findAggregateById(saved.getId()).orElseThrow();
 
-        assertThat(reloaded.getProfile()).isNotNull();
-        assertThat(reloaded.getProfile().getEmailAddress()).isEqualTo("tony@example.com");
-        assertThat(reloaded.getProfile().isMarketingOptIn()).isTrue();
+        assertThat(reloaded.hasProfile()).isTrue();
+        assertThat(reloaded.profileEmailAddress()).isEqualTo("tony@example.com");
+        assertThat(reloaded.profileMarketingOptIn()).isTrue();
     }
 
     @Test
@@ -62,11 +62,12 @@ class CustomerRepositoryDataJpaTest {
 
         Customer reloaded = customerRepository.findAggregateById(saved.getId()).orElseThrow();
 
-        assertThat(reloaded.getTickets()).hasSize(1);
-        Ticket ticket = reloaded.getTickets().iterator().next();
+        assertThat(reloaded.ticketCount()).isEqualTo(1);
+
+        Ticket ticket = reloaded.getTicketsInternal().iterator().next();
         assertThat(ticket.getId()).isNotNull();
         assertThat(ticket.getDescription()).isEqualTo("This is a valid ticket");
-        assertThat(ticket.getStatus()).isEqualTo(TicketStatus.OPEN);
+        assertThat(reloaded.ticketStatus(ticket.getId())).isEqualTo(TicketStatus.OPEN);
     }
 
     @Test
@@ -75,14 +76,14 @@ class CustomerRepositoryDataJpaTest {
 
         Customer customer = new Customer("Tony");
         customer.raiseTicket("This is a valid ticket");
-        Ticket ticket = customer.getTickets().iterator().next();
+        Ticket ticket = customer.getTicketsInternal().iterator().next();
         customer.addTagToTicket(ticket.getId(), bug);
 
         Customer saved = customerRepository.saveAndFlush(customer);
         entityManager.clear();
 
         Customer reloaded = customerRepository.findAggregateById(saved.getId()).orElseThrow();
-        Ticket reloadedTicket = reloaded.getTickets().iterator().next();
+        Ticket reloadedTicket = reloaded.getTicketsInternal().iterator().next();
 
         assertThat(reloadedTicket.getTags())
                 .extracting(Tag::getName)
@@ -101,7 +102,7 @@ class CustomerRepositoryDataJpaTest {
 
         Customer reloaded = customerRepository.findAggregateById(customer.getId()).orElseThrow();
 
-        assertThat(reloaded.getProfile()).isNull();
+        assertThat(reloaded.hasProfile()).isFalse();
     }
 
     @Test
@@ -110,7 +111,7 @@ class CustomerRepositoryDataJpaTest {
         customer.raiseTicket("This is a valid ticket");
         customer = customerRepository.saveAndFlush(customer);
 
-        Long ticketId = customer.getTickets().iterator().next().getId();
+        Long ticketId = customer.getTicketsInternal().iterator().next().getId();
 
         customer.removeTicket(ticketId);
         customerRepository.saveAndFlush(customer);
@@ -118,7 +119,7 @@ class CustomerRepositoryDataJpaTest {
 
         Customer reloaded = customerRepository.findAggregateById(customer.getId()).orElseThrow();
 
-        assertThat(reloaded.getTickets()).isEmpty();
+        assertThat(reloaded.ticketCount()).isZero();
     }
 
     @Test
@@ -128,7 +129,7 @@ class CustomerRepositoryDataJpaTest {
         Customer customer = new Customer("Tony");
         customer.createProfile("tony@example.com", true);
         customer.raiseTicket("This is a valid ticket");
-        Ticket ticket = customer.getTickets().iterator().next();
+        Ticket ticket = customer.getTicketsInternal().iterator().next();
         customer.addTagToTicket(ticket.getId(), bug);
 
         Customer saved = customerRepository.saveAndFlush(customer);
@@ -136,10 +137,10 @@ class CustomerRepositoryDataJpaTest {
 
         Customer aggregate = customerRepository.findAggregateById(saved.getId()).orElseThrow();
 
-        assertThat(aggregate.getProfile()).isNotNull();
-        assertThat(aggregate.getTickets()).hasSize(1);
+        assertThat(aggregate.hasProfile()).isTrue();
+        assertThat(aggregate.ticketCount()).isEqualTo(1);
 
-        Ticket loadedTicket = aggregate.getTickets().iterator().next();
+        Ticket loadedTicket = aggregate.getTicketsInternal().iterator().next();
         assertThat(loadedTicket.getTags())
                 .extracting(Tag::getName)
                 .containsExactly("bug");

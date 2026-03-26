@@ -84,11 +84,11 @@ class CustomerQueryRepositoryDataJpaTest {
         customer = customerRepository.saveAndFlush(customer);
 
         Long ticketId = entityManager.createQuery("""
-            select t.id
-            from Customer c
-            join c.tickets t
-            where c.id = :customerId
-            """, Long.class)
+                select t.id
+                from Customer c
+                join c.tickets t
+                where c.id = :customerId
+                """, Long.class)
                 .setParameter("customerId", customer.getId())
                 .getSingleResult();
 

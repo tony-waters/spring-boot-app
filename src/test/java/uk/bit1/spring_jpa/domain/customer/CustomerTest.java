@@ -158,12 +158,6 @@ class CustomerTest {
         customer.raiseTicket("This is a valid ticket");
 
         assertThat(customer.ticketCount()).isEqualTo(1);
-
-        Ticket ticket = customer.getTickets().iterator().next();
-        assertThat(ticket.getDescription()).isEqualTo("This is a valid ticket");
-        assertThat(ticket.getStatus()).isEqualTo(TicketStatus.OPEN);
-        assertThat(customer.hasTicket(ticket.getId())).isTrue();
-        assertThat(customer.ticketStatus(ticket.getId())).isEqualTo(TicketStatus.OPEN);
     }
 
     @Test
@@ -172,115 +166,117 @@ class CustomerTest {
 
         customer.raiseTicket("   This is a valid ticket   ");
 
-        Ticket ticket = customer.getTickets().iterator().next();
-        assertThat(ticket.getDescription()).isEqualTo("This is a valid ticket");
+        String description = customer.getTicketsInternal().iterator().next().getDescription();
+        assertThat(description).isEqualTo("This is a valid ticket");
     }
 
     @Test
     void change_ticket_description_updates_ticket_inside_customer() {
         Customer customer = new Customer("Tony");
         customer.raiseTicket("This is a valid ticket");
-        Ticket ticket = customer.getTickets().iterator().next();
+        Long ticketId = customer.getTicketsInternal().iterator().next().getId();
 
-        customer.changeTicketDescription(ticket.getId(), "This is another valid description");
+        customer.changeTicketDescription(ticketId, "This is another valid description");
 
-        assertThat(ticket.getDescription()).isEqualTo("This is another valid description");
+        assertThat(customer.ticketDescription(ticketId)).isEqualTo("This is another valid description");
     }
 
     @Test
     void start_ticket_work_changes_ticket_state() {
         Customer customer = new Customer("Tony");
         customer.raiseTicket("This is a valid ticket");
-        Ticket ticket = customer.getTickets().iterator().next();
+        Long ticketId = customer.getTicketsInternal().iterator().next().getId();
 
-        customer.startTicketWork(ticket.getId());
+        customer.startTicketWork(ticketId);
 
-        assertThat(customer.ticketStatus(ticket.getId())).isEqualTo(TicketStatus.IN_PROGRESS);
+        assertThat(customer.ticketStatus(ticketId)).isEqualTo(TicketStatus.IN_PROGRESS);
     }
 
     @Test
     void resolve_ticket_changes_ticket_state() {
         Customer customer = new Customer("Tony");
         customer.raiseTicket("This is a valid ticket");
-        Ticket ticket = customer.getTickets().iterator().next();
+        Long ticketId = customer.getTicketsInternal().iterator().next().getId();
 
-        customer.resolveTicket(ticket.getId());
+        customer.resolveTicket(ticketId);
 
-        assertThat(customer.ticketStatus(ticket.getId())).isEqualTo(TicketStatus.RESOLVED);
+        assertThat(customer.ticketStatus(ticketId)).isEqualTo(TicketStatus.RESOLVED);
     }
 
     @Test
     void reopen_ticket_changes_ticket_state() {
         Customer customer = new Customer("Tony");
         customer.raiseTicket("This is a valid ticket");
-        Ticket ticket = customer.getTickets().iterator().next();
-        customer.resolveTicket(ticket.getId());
+        Long ticketId = customer.getTicketsInternal().iterator().next().getId();
+        customer.resolveTicket(ticketId);
 
-        customer.reopenTicket(ticket.getId());
+        customer.reopenTicket(ticketId);
 
-        assertThat(customer.ticketStatus(ticket.getId())).isEqualTo(TicketStatus.OPEN);
+        assertThat(customer.ticketStatus(ticketId)).isEqualTo(TicketStatus.OPEN);
     }
 
     @Test
     void close_ticket_changes_ticket_state() {
         Customer customer = new Customer("Tony");
         customer.raiseTicket("This is a valid ticket");
-        Ticket ticket = customer.getTickets().iterator().next();
-        customer.resolveTicket(ticket.getId());
+        Long ticketId = customer.getTicketsInternal().iterator().next().getId();
+        customer.resolveTicket(ticketId);
 
-        customer.closeTicket(ticket.getId());
+        customer.closeTicket(ticketId);
 
-        assertThat(customer.ticketStatus(ticket.getId())).isEqualTo(TicketStatus.CLOSED);
+        assertThat(customer.ticketStatus(ticketId)).isEqualTo(TicketStatus.CLOSED);
     }
 
     @Test
     void add_tag_to_ticket_adds_tag() {
         Customer customer = new Customer("Tony");
         customer.raiseTicket("This is a valid ticket");
-        Ticket ticket = customer.getTickets().iterator().next();
+        Long ticketId = customer.getTicketsInternal().iterator().next().getId();
         Tag tag = new Tag("bug");
 
-        customer.addTagToTicket(ticket.getId(), tag);
+        customer.addTagToTicket(ticketId, tag);
 
-        assertThat(ticket.getTags()).containsExactly(tag);
+        assertThat(customer.ticketTagCount(ticketId)).isEqualTo(1);
+        assertThat(customer.ticketHasTag(ticketId, tag)).isTrue();
     }
 
     @Test
     void remove_tag_from_ticket_removes_tag() {
         Customer customer = new Customer("Tony");
         customer.raiseTicket("This is a valid ticket");
-        Ticket ticket = customer.getTickets().iterator().next();
+        Long ticketId = customer.getTicketsInternal().iterator().next().getId();
         Tag tag = new Tag("bug");
-        customer.addTagToTicket(ticket.getId(), tag);
+        customer.addTagToTicket(ticketId, tag);
 
-        customer.removeTagFromTicket(ticket.getId(), tag);
+        customer.removeTagFromTicket(ticketId, tag);
 
-        assertThat(ticket.getTags()).isEmpty();
+        assertThat(customer.ticketTagCount(ticketId)).isZero();
+        assertThat(customer.ticketHasTag(ticketId, tag)).isFalse();
     }
 
     @Test
     void clear_tags_from_ticket_removes_all_tags() {
         Customer customer = new Customer("Tony");
         customer.raiseTicket("This is a valid ticket");
-        Ticket ticket = customer.getTickets().iterator().next();
-        customer.addTagToTicket(ticket.getId(), new Tag("bug"));
-        customer.addTagToTicket(ticket.getId(), new Tag("urgent"));
+        Long ticketId = customer.getTicketsInternal().iterator().next().getId();
+        customer.addTagToTicket(ticketId, new Tag("bug"));
+        customer.addTagToTicket(ticketId, new Tag("urgent"));
 
-        customer.clearTagsFromTicket(ticket.getId());
+        customer.clearTagsFromTicket(ticketId);
 
-        assertThat(ticket.getTags()).isEmpty();
+        assertThat(customer.ticketTagCount(ticketId)).isZero();
     }
 
     @Test
     void remove_ticket_removes_existing_ticket() {
         Customer customer = new Customer("Tony");
         customer.raiseTicket("This is a valid ticket");
-        Ticket ticket = customer.getTickets().iterator().next();
+        Long ticketId = customer.getTicketsInternal().iterator().next().getId();
 
-        customer.removeTicket(ticket.getId());
+        customer.removeTicket(ticketId);
 
         assertThat(customer.ticketCount()).isZero();
-        assertThat(customer.hasTicket(ticket.getId())).isFalse();
+        assertThat(customer.hasTicket(ticketId)).isFalse();
     }
 
     @Test
@@ -302,11 +298,11 @@ class CustomerTest {
     }
 
     @Test
-    void ticket_collection_is_unmodifiable() {
+    void ticket_description_rejects_unknown_ticket_id() {
         Customer customer = new Customer("Tony");
-        customer.raiseTicket("This is a valid ticket");
 
-        assertThatThrownBy(() -> customer.getTickets().clear())
-                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> customer.ticketDescription(999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Ticket does not belong to customer: 999");
     }
 }

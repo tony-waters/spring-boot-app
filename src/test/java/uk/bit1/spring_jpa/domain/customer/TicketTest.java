@@ -15,7 +15,7 @@ class TicketTest {
     void setUp() {
         Customer customer = new Customer("Tony");
         customer.raiseTicket("This is a valid ticket");
-        ticket = customer.getTickets().iterator().next();
+        ticket = customer.getTicketsInternal().iterator().next();
     }
 
     @Test
