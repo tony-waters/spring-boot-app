@@ -48,14 +48,21 @@ class CustomerTest {
     }
 
     @Test
+    void customer_has_no_profile_initially() {
+        Customer customer = new Customer("Tony");
+
+        assertThat(customer.hasProfile()).isFalse();
+    }
+
+    @Test
     void create_profile_creates_profile_when_missing() {
         Customer customer = new Customer("Tony");
 
         customer.createProfile("tony@example.com", true);
 
-        assertThat(customer.getProfile()).isNotNull();
-        assertThat(customer.getProfile().getEmailAddress()).isEqualTo("tony@example.com");
-        assertThat(customer.getProfile().isMarketingOptIn()).isTrue();
+        assertThat(customer.hasProfile()).isTrue();
+        assertThat(customer.profileEmailAddress()).isEqualTo("tony@example.com");
+        assertThat(customer.profileMarketingOptIn()).isTrue();
     }
 
     @Test
@@ -75,7 +82,7 @@ class CustomerTest {
 
         customer.changeProfileEmailAddress("  anthony@example.com  ");
 
-        assertThat(customer.getProfile().getEmailAddress()).isEqualTo("anthony@example.com");
+        assertThat(customer.profileEmailAddress()).isEqualTo("anthony@example.com");
     }
 
     @Test
@@ -94,7 +101,7 @@ class CustomerTest {
 
         customer.optInToMarketing();
 
-        assertThat(customer.getProfile().isMarketingOptIn()).isTrue();
+        assertThat(customer.profileMarketingOptIn()).isTrue();
     }
 
     @Test
@@ -104,7 +111,7 @@ class CustomerTest {
 
         customer.optOutOfMarketing();
 
-        assertThat(customer.getProfile().isMarketingOptIn()).isFalse();
+        assertThat(customer.profileMarketingOptIn()).isFalse();
     }
 
     @Test
@@ -114,7 +121,7 @@ class CustomerTest {
 
         customer.removeProfile();
 
-        assertThat(customer.getProfile()).isNull();
+        assertThat(customer.hasProfile()).isFalse();
     }
 
     @Test
@@ -127,16 +134,36 @@ class CustomerTest {
     }
 
     @Test
+    void profile_email_address_rejects_when_profile_missing() {
+        Customer customer = new Customer("Tony");
+
+        assertThatThrownBy(customer::profileEmailAddress)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Customer has no profile");
+    }
+
+    @Test
+    void profile_marketing_opt_in_rejects_when_profile_missing() {
+        Customer customer = new Customer("Tony");
+
+        assertThatThrownBy(customer::profileMarketingOptIn)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Customer has no profile");
+    }
+
+    @Test
     void raise_ticket_adds_ticket_to_customer() {
         Customer customer = new Customer("Tony");
 
         customer.raiseTicket("This is a valid ticket");
 
-        assertThat(customer.getTickets()).hasSize(1);
+        assertThat(customer.ticketCount()).isEqualTo(1);
 
         Ticket ticket = customer.getTickets().iterator().next();
         assertThat(ticket.getDescription()).isEqualTo("This is a valid ticket");
         assertThat(ticket.getStatus()).isEqualTo(TicketStatus.OPEN);
+        assertThat(customer.hasTicket(ticket.getId())).isTrue();
+        assertThat(customer.ticketStatus(ticket.getId())).isEqualTo(TicketStatus.OPEN);
     }
 
     @Test
@@ -168,7 +195,7 @@ class CustomerTest {
 
         customer.startTicketWork(ticket.getId());
 
-        assertThat(ticket.getStatus()).isEqualTo(TicketStatus.IN_PROGRESS);
+        assertThat(customer.ticketStatus(ticket.getId())).isEqualTo(TicketStatus.IN_PROGRESS);
     }
 
     @Test
@@ -179,7 +206,7 @@ class CustomerTest {
 
         customer.resolveTicket(ticket.getId());
 
-        assertThat(ticket.getStatus()).isEqualTo(TicketStatus.RESOLVED);
+        assertThat(customer.ticketStatus(ticket.getId())).isEqualTo(TicketStatus.RESOLVED);
     }
 
     @Test
@@ -191,7 +218,7 @@ class CustomerTest {
 
         customer.reopenTicket(ticket.getId());
 
-        assertThat(ticket.getStatus()).isEqualTo(TicketStatus.OPEN);
+        assertThat(customer.ticketStatus(ticket.getId())).isEqualTo(TicketStatus.OPEN);
     }
 
     @Test
@@ -203,7 +230,7 @@ class CustomerTest {
 
         customer.closeTicket(ticket.getId());
 
-        assertThat(ticket.getStatus()).isEqualTo(TicketStatus.CLOSED);
+        assertThat(customer.ticketStatus(ticket.getId())).isEqualTo(TicketStatus.CLOSED);
     }
 
     @Test
@@ -252,7 +279,8 @@ class CustomerTest {
 
         customer.removeTicket(ticket.getId());
 
-        assertThat(customer.getTickets()).isEmpty();
+        assertThat(customer.ticketCount()).isZero();
+        assertThat(customer.hasTicket(ticket.getId())).isFalse();
     }
 
     @Test
@@ -260,6 +288,15 @@ class CustomerTest {
         Customer customer = new Customer("Tony");
 
         assertThatThrownBy(() -> customer.removeTicket(999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Ticket does not belong to customer: 999");
+    }
+
+    @Test
+    void ticket_status_rejects_unknown_ticket_id() {
+        Customer customer = new Customer("Tony");
+
+        assertThatThrownBy(() -> customer.ticketStatus(999L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Ticket does not belong to customer: 999");
     }

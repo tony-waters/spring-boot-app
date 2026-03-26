@@ -27,35 +27,53 @@ public class Customer extends BaseEntity {
     @Column(name = "display_name", length = 80, nullable = false)
     private String displayName;
 
-    @OneToOne(
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "profile_id", unique = true)
     private Profile profile;
 
-    @OneToMany(
-            mappedBy = "customer",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Ticket> tickets = new HashSet<>();
 
     public Customer(String displayName) {
         this.displayName = validateDisplayName(displayName);
     }
 
-    public Profile getProfile() {
+    Profile getProfile() {
         return profile;
     }
 
-    public Set<Ticket> getTickets() {
+    Set<Ticket> getTickets() {
         return Collections.unmodifiableSet(tickets);
     }
 
     public void changeDisplayName(String displayName) {
         this.displayName = validateDisplayName(displayName);
+    }
+
+    public boolean hasProfile() {
+        return profile != null;
+    }
+
+    public String profileEmailAddress() {
+        requireProfile();
+        return profile.getEmailAddress();
+    }
+
+    public boolean profileMarketingOptIn() {
+        requireProfile();
+        return profile.isMarketingOptIn();
+    }
+
+    public int ticketCount() {
+        return tickets.size();
+    }
+
+    public boolean hasTicket(Long ticketId) {
+        return tickets.stream().anyMatch(ticket -> Objects.equals(ticket.getId(), ticketId));
+    }
+
+    public TicketStatus ticketStatus(Long ticketId) {
+        return findTicket(ticketId).getStatus();
     }
 
     public void createProfile(String emailAddress, boolean marketingOptIn) {
@@ -86,8 +104,7 @@ public class Customer extends BaseEntity {
     }
 
     public void raiseTicket(String description) {
-        Ticket ticket = new Ticket(this, description);
-        tickets.add(ticket);
+        tickets.add(new Ticket(this, description));
     }
 
     public void changeTicketDescription(Long ticketId, String description) {

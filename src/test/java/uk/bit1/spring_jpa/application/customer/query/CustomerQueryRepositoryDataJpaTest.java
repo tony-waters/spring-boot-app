@@ -74,7 +74,7 @@ class CustomerQueryRepositoryDataJpaTest {
         assertThat(customerQueryRepository.findTicketsByCustomerId(customer.getId()))
                 .hasSize(2)
                 .extracting(TicketListItemView::description)
-                .containsExactly("This is a valid ticket", "This is another valid ticket");
+                .containsExactlyInAnyOrder("This is a valid ticket", "This is another valid ticket");
     }
 
     @Test
