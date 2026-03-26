@@ -1,131 +1,99 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.1</version>
+		<version>4.0.5</version>
 		<relativePath/>
 	</parent>
 
+	<groupId>uk.bit1</groupId>
+	<artifactId>spring-jpa</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>spring-jpa</name>
+	<description>Spring Boot JPA aggregate and CQRS sample</description>
+
 	<properties>
 		<java.version>21</java.version>
-		<mapstruct.version>1.5.5.Final</mapstruct.version>
-		<springboot.version>4.0.1</springboot.version>
+		<lombok.version>1.18.44</lombok.version>
 	</properties>
 
-	<groupId>uk.bit1</groupId>
-	<artifactId>spring-jpa-relationships</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-
-	<name>spring-jpa-relationships</name>
-	<description>Demo project for Spring Boot</description>
-
-
 	<dependencies>
-		<!-- App -->
+
+		<!-- Core app -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-			<version>${springboot.version}</version>
+			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
 
+		<!-- JPA -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
-			<version>${springboot.version}</version>
 		</dependency>
 
+		<!-- Bean Validation -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
-			<version>${springboot.version}</version>
-			<scope>compile</scope>
 		</dependency>
 
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-starter-web</artifactId>-->
+<!--		</dependency>-->
+
+		<!-- Runtime DB for local dev/tests -->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- MapStruct -->
-		<dependency>
-			<groupId>org.mapstruct</groupId>
-			<artifactId>mapstruct</artifactId>
-			<version>${mapstruct.version}</version>
-		</dependency>
-
-		<!-- lombok -->
+		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<scope>provided</scope>
+			<optional>true</optional>
 		</dependency>
 
-		<!-- Core test bundle -->
+		<!-- Tests -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-			<version>${springboot.version}</version>
 		</dependency>
 
-		<!-- Boot 4: technology-specific test starters -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
-			<scope>test</scope>
-			<version>${springboot.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webmvc-test</artifactId>
-			<scope>test</scope>
-			<version>${springboot.version}</version>
-		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
-			<!-- MapStruct annotation processing -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<release>${java.version}</release>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>org.mapstruct</groupId>
-							<artifactId>mapstruct-processor</artifactId>
-							<version>${mapstruct.version}</version>
-						</path>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</path>
-					</annotationProcessorPaths>
-				</configuration>
-			</plugin>
-
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
-
-	<!--	<repositories>-->
-	<!--		<repository>-->
-	<!--			<id>spring-snapshots</id>-->
-	<!--			<url>https://repo.spring.io/snapshot</url>-->
-	<!--			<snapshots>-->
-	<!--				<enabled>true</enabled>-->
-	<!--			</snapshots>-->
-	<!--		</repository>-->
-	<!--	</repositories>-->
 
 </project>

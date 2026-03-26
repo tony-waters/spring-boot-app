@@ -25,6 +25,8 @@ domain model ER diagram here.
 ### Modelling @OneToMany, @ManyToMany, and @OneToOne relationships
 We will be modelling three relationships in our Entities:
 - Cus
+  https://medium.com/@davoud.badamchi/understanding-jpa-relationships-manytomany-onetomany-and-onetoone-ab84aa1953c1
+- 
 
 ## The Customer entity
 For demonstration purposes the Customer entity contains a small amount of mutable data - the Customers name.
