@@ -4,9 +4,14 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import uk.bit1.spring_jpa.domain.customer.Customer;
 import uk.bit1.spring_jpa.domain.customer.CustomerRepository;
 import uk.bit1.spring_jpa.domain.customer.TicketStatus;
+import uk.bit1.spring_jpa.domain.tag.Tag;
+import uk.bit1.spring_jpa.domain.tag.TagRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,17 +25,66 @@ class CustomerQueryRepositoryDataJpaTest {
     private CustomerQueryRepository customerQueryRepository;
 
     @Autowired
+    private TagRepository tagRepository;
+
+    @Autowired
     private EntityManager entityManager;
 
     @Test
-    void find_all_summaries_returns_customers() {
+    void find_all_summaries_returns_first_page() {
         customerRepository.saveAndFlush(new Customer("Alice"));
         customerRepository.saveAndFlush(new Customer("Bob"));
+        customerRepository.saveAndFlush(new Customer("Charlie"));
         entityManager.clear();
 
-        assertThat(customerQueryRepository.findAllSummaries())
+        Page<CustomerSummaryView> page = customerQueryRepository.findAllSummaries(
+                PageRequest.of(0, 2, Sort.by("displayName").ascending())
+        );
+
+        assertThat(page.getContent())
                 .extracting(CustomerSummaryView::displayName)
                 .containsExactly("Alice", "Bob");
+
+        assertThat(page.getTotalElements()).isEqualTo(3);
+        assertThat(page.getTotalPages()).isEqualTo(2);
+        assertThat(page.getNumber()).isEqualTo(0);
+        assertThat(page.getSize()).isEqualTo(2);
+    }
+
+    @Test
+    void find_all_summaries_returns_second_page() {
+        customerRepository.saveAndFlush(new Customer("Alice"));
+        customerRepository.saveAndFlush(new Customer("Bob"));
+        customerRepository.saveAndFlush(new Customer("Charlie"));
+        entityManager.clear();
+
+        Page<CustomerSummaryView> page = customerQueryRepository.findAllSummaries(
+                PageRequest.of(1, 2, Sort.by("displayName").ascending())
+        );
+
+        assertThat(page.getContent())
+                .extracting(CustomerSummaryView::displayName)
+                .containsExactly("Charlie");
+
+        assertThat(page.getTotalElements()).isEqualTo(3);
+        assertThat(page.getTotalPages()).isEqualTo(2);
+        assertThat(page.getNumber()).isEqualTo(1);
+    }
+
+    @Test
+    void find_all_summaries_supports_descending_sort() {
+        customerRepository.saveAndFlush(new Customer("Alice"));
+        customerRepository.saveAndFlush(new Customer("Bob"));
+        customerRepository.saveAndFlush(new Customer("Charlie"));
+        entityManager.clear();
+
+        Page<CustomerSummaryView> page = customerQueryRepository.findAllSummaries(
+                PageRequest.of(0, 3, Sort.by("displayName").descending())
+        );
+
+        assertThat(page.getContent())
+                .extracting(CustomerSummaryView::displayName)
+                .containsExactly("Charlie", "Bob", "Alice");
     }
 
     @Test
@@ -117,5 +171,69 @@ class CustomerQueryRepositoryDataJpaTest {
     @Test
     void find_detail_by_id_returns_empty_when_customer_missing() {
         assertThat(customerQueryRepository.findDetailById(999L)).isEmpty();
+    }
+
+    @Test
+    void find_ticket_detail_rows_returns_ticket_and_tag_names() {
+        Tag bug = tagRepository.saveAndFlush(new Tag("bug"));
+        Tag urgent = tagRepository.saveAndFlush(new Tag("urgent"));
+
+        Customer customer = new Customer("Tony");
+        customer.raiseTicket("This is a valid ticket");
+        customer = customerRepository.saveAndFlush(customer);
+
+        Long ticketId = entityManager.createQuery("""
+                select t.id
+                from Customer c
+                join c.tickets t
+                where c.id = :customerId
+                """, Long.class)
+                .setParameter("customerId", customer.getId())
+                .getSingleResult();
+
+        customer.addTagToTicket(ticketId, urgent);
+        customer.addTagToTicket(ticketId, bug);
+        customerRepository.saveAndFlush(customer);
+        entityManager.clear();
+
+        assertThat(customerQueryRepository.findTicketDetailRows(customer.getId(), ticketId))
+                .hasSize(2)
+                .extracting(TicketDetailRow::tagName)
+                .containsExactly("bug", "urgent");
+    }
+
+    @Test
+    void find_ticket_detail_rows_returns_single_row_with_null_tag_when_ticket_has_no_tags() {
+        Customer customer = new Customer("Tony");
+        customer.raiseTicket("This is a valid ticket");
+        customer = customerRepository.saveAndFlush(customer);
+
+        Long ticketId = entityManager.createQuery("""
+                select t.id
+                from Customer c
+                join c.tickets t
+                where c.id = :customerId
+                """, Long.class)
+                .setParameter("customerId", customer.getId())
+                .getSingleResult();
+
+        entityManager.clear();
+
+        assertThat(customerQueryRepository.findTicketDetailRows(customer.getId(), ticketId))
+                .singleElement()
+                .satisfies(row -> {
+                    assertThat(row.ticketId()).isEqualTo(ticketId);
+                    assertThat(row.description()).isEqualTo("This is a valid ticket");
+                    assertThat(row.status()).isEqualTo(TicketStatus.OPEN);
+                    assertThat(row.tagName()).isNull();
+                });
+    }
+
+    @Test
+    void find_ticket_detail_rows_returns_empty_when_ticket_missing_for_customer() {
+        Customer customer = customerRepository.saveAndFlush(new Customer("Tony"));
+        entityManager.clear();
+
+        assertThat(customerQueryRepository.findTicketDetailRows(customer.getId(), 999L)).isEmpty();
     }
 }

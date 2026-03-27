@@ -1,5 +1,7 @@
 package uk.bit1.spring_jpa.application.customer.query;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import uk.bit1.spring_jpa.domain.customer.Customer;
@@ -15,9 +17,8 @@ public interface CustomerQueryRepository extends Repository<Customer, Long> {
             c.displayName
         )
         from Customer c
-        order by c.displayName
     """)
-    List<CustomerSummaryView> findAllSummaries();
+    Page<CustomerSummaryView> findAllSummaries(Pageable pageable);
 
     @Query("""
         select new uk.bit1.spring_jpa.application.customer.query.CustomerDetailView(
@@ -45,4 +46,20 @@ public interface CustomerQueryRepository extends Repository<Customer, Long> {
         order by t.id
     """)
     List<TicketListItemView> findTicketsByCustomerId(Long customerId);
+
+    @Query("""
+        select new uk.bit1.spring_jpa.application.customer.query.TicketDetailRow(
+            t.id,
+            t.description,
+            t.status,
+            tag.name
+        )
+        from Customer c
+        join c.tickets t
+        left join t.tags tag
+        where c.id = :customerId
+          and t.id = :ticketId
+        order by tag.name
+    """)
+    List<TicketDetailRow> findTicketDetailRows(Long customerId, Long ticketId);
 }
