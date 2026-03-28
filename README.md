@@ -19,6 +19,7 @@ A focused Spring Boot application demonstrating:
 - Spring Data JPA
 - Hibernate 7
 - H2 (test database)
+- Postgres (for docker-compose)
 - AssertJ
 
 ---
@@ -165,7 +166,7 @@ web/
 
 ---
 
-## 🚀 Running the application
+## 🚀 Running the application with Maven
 
 ### Requirements
 
@@ -233,7 +234,7 @@ curl "http://localhost:8080/api/customers/1/tickets?tag=bug"
 
 ---
 
-## 🐳 Running with Docker Compose
+## 🐳 Running the Application with Docker Compose
 
 This project can be run locally using Docker Compose, with:
 
