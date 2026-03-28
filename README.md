@@ -1,14 +1,25 @@
-# Spring Boot JPA – Aggregate + CQRS Demo
+# Spring Boot Demo
 
 A focused Spring Boot application demonstrating:
 
+* @OneToOne, @OneToMany, and @ManyToMany relationships
 * Aggregate-oriented domain modelling (DDD-lite)
-* Clear separation of **Command vs Query**
+* Clear separation of **Command vs Query** with CQRS
 * Projection-based read model (no entity leakage)
+* Query Pagination and Filtering
 * REST API with validation and proper status codes
 * Layered testing strategy (domain → JPA → service → web)
 
-This is intentionally **not** a CRUD demo.
+---
+
+## Tech Stack
+
+- Java 21
+- Spring Boot 4.x
+- Spring Data JPA
+- Hibernate 7
+- H2 (test database)
+- AssertJ
 
 ---
 
@@ -240,6 +251,7 @@ If extending this demo:
 * Add load testing (k6/Gatling)
 * Add authentication
 * Introduce domain events (e.g. TicketResolvedEvent)
+* Develop Tag as a separate aggregate route
 
 ---
 
