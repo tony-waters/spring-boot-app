@@ -233,12 +233,139 @@ curl "http://localhost:8080/api/customers/1/tickets?tag=bug"
 
 ---
 
-### Healthchecks
+## 🐳 Running with Docker Compose
+
+This project can be run locally using Docker Compose, with:
+
+* Spring Boot application
+* PostgreSQL database
+* Environment-based configuration (no local setup required)
+
+---
+
+### 📦 Prerequisites
+
+* Docker
+* Docker Compose (v2+)
+
+---
+
+### 🚀 Start the application
+
+```bash
+docker compose up --build
+```
+
+This will:
+
+1. Build the Spring Boot application image
+2. Start a PostgreSQL container
+3. Start the application container
+4. Wire them together via Docker networking
+
+---
+
+### 🌐 Access the application
+
+* API: http://localhost:8080
+* Health: http://localhost:8080/actuator/health
+
+---
+
+### 🔍 Verify it’s working
+
+Check health:
 
 ```bash
 curl http://localhost:8080/actuator/health
-curl http://localhost:8080/api/customers?page=0&size=5
 ```
+
+Create a customer:
+
+```bash
+curl -X POST http://localhost:8080/api/customers \
+  -H "Content-Type: application/json" \
+  -d '{"displayName":"Tony"}'
+```
+
+Query customers:
+
+```bash
+curl "http://localhost:8080/api/customers?page=0&size=5"
+```
+
+---
+
+### 🗄️ Database details
+
+The application connects to PostgreSQL using:
+
+```
+jdbc:postgresql://postgres:5432/spring_jpa
+```
+
+Credentials (from `docker-compose.yml`):
+
+* database: `spring_jpa`
+* username: `spring_user`
+* password: `spring_pass`
+
+Data is persisted in a Docker volume:
+
+```
+postgres_data
+```
+
+---
+
+### ⚙️ Configuration
+
+All configuration is provided via environment variables:
+
+| Variable                        | Purpose             |
+| ------------------------------- | ------------------- |
+| `SPRING_DATASOURCE_URL`         | Database connection |
+| `SPRING_DATASOURCE_USERNAME`    | DB username         |
+| `SPRING_DATASOURCE_PASSWORD`    | DB password         |
+| `SPRING_JPA_HIBERNATE_DDL_AUTO` | Schema generation   |
+| `SERVER_PORT`                   | App port            |
+| `JAVA_TOOL_OPTIONS`             | JVM memory settings |
+
+---
+
+### 🧠 Notes
+
+* Uses `ddl-auto=update` for convenience (not for production)
+* PostgreSQL runs with a health check before the app starts
+* Application exposes `/actuator/health` for readiness/liveness
+
+---
+
+### 🛑 Stop the application
+
+```bash
+docker compose down
+```
+
+To remove the database volume as well:
+
+```bash
+docker compose down -v
+```
+
+---
+
+### 📈 Why this matters
+
+This setup demonstrates:
+
+* Containerised Spring Boot application
+* Externalised configuration (12-factor style)
+* Service-to-service networking
+* Real database integration
+
+It forms the foundation for the Kubernetes deployment shown later.
+
 
 ## ⚠️ What this project deliberately avoids
 
