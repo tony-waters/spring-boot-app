@@ -117,10 +117,6 @@ Layered tests:
 | Query           | Projection + filtering tests    |
 | Web             | `@WebMvcTest` (slice tests)     |
 
-Important detail:
-
-> Tests use **flush + clear** to avoid false positives from persistence context caching.
-
 ---
 
 ## 🏗️ Architecture Overview
