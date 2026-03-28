@@ -177,6 +177,9 @@ class CustomerQueryRepositoryDataJpaTest {
         customer.raiseTicket("This is another valid ticket");
         customer = customerRepository.saveAndFlush(customer);
 
+        entityManager.flush();
+        entityManager.clear();
+
         var ticketIds = entityManager.createQuery("""
                 select t.id
                 from Customer c
