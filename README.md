@@ -1,8 +1,8 @@
-# Spring Boot Demo
+# Spring Boot REST/JPA/DDD-lite Demo
 
-A focused Spring Boot application demonstrating:
+A focused Spring Boot REST application demonstrating:
 
-* @OneToOne, @OneToMany, and @ManyToMany relationships
+* @OneToOne, @OneToMany, and @ManyToMany JPA relationships
 * Aggregate-oriented domain modelling (DDD-lite)
 * Clear separation of **Command vs Query** with CQRS
 * Projection-based read model (no entity leakage)

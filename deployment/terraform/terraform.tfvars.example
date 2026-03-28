@@ -1,0 +1,18 @@
+kube_context = "docker-desktop"
+
+namespace        = "spring-jpa-demo"
+release_name     = "spring-jpa"
+image_repository = "spring-jpa"
+image_tag        = "latest"
+
+replica_count = 1
+service_type  = "ClusterIP"
+
+ingress_enabled    = false
+ingress_class_name = ""
+host               = "spring-jpa.local"
+
+autoscaling_enabled      = false
+autoscaling_min_replicas = 1
+autoscaling_max_replicas = 3
+autoscaling_target_cpu   = 70
