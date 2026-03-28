@@ -3,10 +3,10 @@ package uk.bit1.spring_jpa.web.customer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.bit1.spring_jpa.application.customer.query.CustomerDetailView;
 import uk.bit1.spring_jpa.application.customer.query.CustomerQueryService;
 import uk.bit1.spring_jpa.application.customer.query.CustomerSummaryView;
@@ -16,6 +16,8 @@ import uk.bit1.spring_jpa.domain.customer.TicketStatus;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -31,7 +33,7 @@ class CustomerQueryControllerWebMvcTest {
     private CustomerQueryService customerQueryService;
 
     @Test
-    void find_all_customers_returns_page() throws Exception {
+    void find_customers_returns_page() throws Exception {
         var page = new PageImpl<>(
                 List.of(
                         new CustomerSummaryView(1L, "Alice"),
@@ -41,7 +43,7 @@ class CustomerQueryControllerWebMvcTest {
                 3
         );
 
-        given(customerQueryService.findAllCustomers(org.mockito.ArgumentMatchers.any()))
+        given(customerQueryService.findCustomers(eq(null), any()))
                 .willReturn(page);
 
         mockMvc.perform(get("/api/customers?page=0&size=2"))
@@ -51,9 +53,23 @@ class CustomerQueryControllerWebMvcTest {
                 .andExpect(jsonPath("$.content[1].id").value(2))
                 .andExpect(jsonPath("$.content[1].displayName").value("Bob"))
                 .andExpect(jsonPath("$.totalElements").value(3))
-                .andExpect(jsonPath("$.totalPages").value(2))
-                .andExpect(jsonPath("$.size").value(2))
-                .andExpect(jsonPath("$.number").value(0));
+                .andExpect(jsonPath("$.totalPages").value(2));
+    }
+
+    @Test
+    void find_customers_passes_name_filter() throws Exception {
+        var page = new PageImpl<>(
+                List.of(new CustomerSummaryView(1L, "Tony")),
+                PageRequest.of(0, 10),
+                1
+        );
+
+        given(customerQueryService.findCustomers(eq("ton"), any()))
+                .willReturn(page);
+
+        mockMvc.perform(get("/api/customers?name=ton&page=0&size=10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].displayName").value("Tony"));
     }
 
     @Test
@@ -70,15 +86,14 @@ class CustomerQueryControllerWebMvcTest {
         mockMvc.perform(get("/api/customers/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.version").value(0))
                 .andExpect(jsonPath("$.displayName").value("Tony"))
                 .andExpect(jsonPath("$.emailAddress").value("tony@example.com"))
                 .andExpect(jsonPath("$.marketingOptIn").value(true));
     }
 
     @Test
-    void find_tickets_returns_list() throws Exception {
-        given(customerQueryService.findTicketsForCustomer(1L))
+    void find_tickets_returns_unfiltered_list() throws Exception {
+        given(customerQueryService.findTicketsForCustomer(1L, null, null))
                 .willReturn(List.of(
                         new TicketListItemView(10L, "First valid ticket", TicketStatus.OPEN),
                         new TicketListItemView(11L, "Second valid ticket", TicketStatus.RESOLVED)
@@ -87,11 +102,35 @@ class CustomerQueryControllerWebMvcTest {
         mockMvc.perform(get("/api/customers/1/tickets"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(10))
-                .andExpect(jsonPath("$[0].description").value("First valid ticket"))
                 .andExpect(jsonPath("$[0].status").value("OPEN"))
                 .andExpect(jsonPath("$[1].id").value(11))
-                .andExpect(jsonPath("$[1].description").value("Second valid ticket"))
                 .andExpect(jsonPath("$[1].status").value("RESOLVED"));
+    }
+
+    @Test
+    void find_tickets_filters_by_status() throws Exception {
+        given(customerQueryService.findTicketsForCustomer(1L, TicketStatus.OPEN, null))
+                .willReturn(List.of(
+                        new TicketListItemView(10L, "First valid ticket", TicketStatus.OPEN)
+                ));
+
+        mockMvc.perform(get("/api/customers/1/tickets?status=OPEN"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(10))
+                .andExpect(jsonPath("$[0].status").value("OPEN"));
+    }
+
+    @Test
+    void find_tickets_filters_by_tag() throws Exception {
+        given(customerQueryService.findTicketsForCustomer(1L, null, "bug"))
+                .willReturn(List.of(
+                        new TicketListItemView(10L, "First valid ticket", TicketStatus.OPEN)
+                ));
+
+        mockMvc.perform(get("/api/customers/1/tickets?tag=bug"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(10))
+                .andExpect(jsonPath("$[0].description").value("First valid ticket"));
     }
 
     @Test

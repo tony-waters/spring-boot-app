@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.bit1.spring_jpa.domain.customer.TicketStatus;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class CustomerQueryService {
 
     private final CustomerQueryRepository customerQueryRepository;
 
-    public Page<CustomerSummaryView> findAllCustomers(Pageable pageable) {
+    public Page<CustomerSummaryView> findCustomers(String name, Pageable pageable) {
         Pageable effectivePageable = pageable.getSort().isSorted()
                 ? pageable
                 : PageRequest.of(
@@ -26,7 +27,9 @@ public class CustomerQueryService {
                 Sort.by("displayName").ascending()
         );
 
-        return customerQueryRepository.findAllSummaries(effectivePageable);
+        String normalizedName = normalizeFilter(name);
+
+        return customerQueryRepository.findCustomerSummaries(normalizedName, effectivePageable);
     }
 
     public CustomerDetailView findCustomerDetail(Long customerId) {
@@ -34,7 +37,21 @@ public class CustomerQueryService {
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + customerId));
     }
 
-    public List<TicketListItemView> findTicketsForCustomer(Long customerId) {
+    public List<TicketListItemView> findTicketsForCustomer(Long customerId, TicketStatus status, String tagName) {
+        String normalizedTagName = normalizeFilter(tagName);
+
+        if (status != null && normalizedTagName != null) {
+            throw new IllegalArgumentException("Filter by status or tag, not both");
+        }
+
+        if (status != null) {
+            return customerQueryRepository.findTicketsByCustomerIdAndStatus(customerId, status);
+        }
+
+        if (normalizedTagName != null) {
+            return customerQueryRepository.findTicketsByCustomerIdAndTagName(customerId, normalizedTagName);
+        }
+
         return customerQueryRepository.findTicketsByCustomerId(customerId);
     }
 
@@ -61,5 +78,13 @@ public class CustomerQueryService {
                 first.status(),
                 tagNames
         );
+    }
+
+    private String normalizeFilter(String value) {
+        if (value == null) {
+            return null;
+        }
+        String stripped = value.strip();
+        return stripped.isEmpty() ? null : stripped;
     }
 }

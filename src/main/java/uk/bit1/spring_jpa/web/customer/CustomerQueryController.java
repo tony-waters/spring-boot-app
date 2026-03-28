@@ -3,15 +3,13 @@ package uk.bit1.spring_jpa.web.customer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.bit1.spring_jpa.application.customer.query.CustomerDetailView;
 import uk.bit1.spring_jpa.application.customer.query.CustomerQueryService;
 import uk.bit1.spring_jpa.application.customer.query.CustomerSummaryView;
 import uk.bit1.spring_jpa.application.customer.query.TicketDetailView;
 import uk.bit1.spring_jpa.application.customer.query.TicketListItemView;
+import uk.bit1.spring_jpa.domain.customer.TicketStatus;
 
 import java.util.List;
 
@@ -23,8 +21,11 @@ class CustomerQueryController {
     private final CustomerQueryService customerQueryService;
 
     @GetMapping
-    Page<CustomerSummaryView> findAllCustomers(Pageable pageable) {
-        return customerQueryService.findAllCustomers(pageable);
+    Page<CustomerSummaryView> findCustomers(
+            @RequestParam(required = false) String name,
+            Pageable pageable
+    ) {
+        return customerQueryService.findCustomers(name, pageable);
     }
 
     @GetMapping("/{customerId}")
@@ -33,8 +34,12 @@ class CustomerQueryController {
     }
 
     @GetMapping("/{customerId}/tickets")
-    List<TicketListItemView> findTickets(@PathVariable Long customerId) {
-        return customerQueryService.findTicketsForCustomer(customerId);
+    List<TicketListItemView> findTickets(
+            @PathVariable Long customerId,
+            @RequestParam(required = false) TicketStatus status,
+            @RequestParam(required = false) String tag
+    ) {
+        return customerQueryService.findTicketsForCustomer(customerId, status, tag);
     }
 
     @GetMapping("/{customerId}/tickets/{ticketId}")

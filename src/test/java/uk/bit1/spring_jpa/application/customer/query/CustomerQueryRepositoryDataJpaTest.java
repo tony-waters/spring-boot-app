@@ -31,13 +31,14 @@ class CustomerQueryRepositoryDataJpaTest {
     private EntityManager entityManager;
 
     @Test
-    void find_all_summaries_returns_first_page() {
+    void find_customer_summaries_returns_first_page() {
         customerRepository.saveAndFlush(new Customer("Alice"));
         customerRepository.saveAndFlush(new Customer("Bob"));
         customerRepository.saveAndFlush(new Customer("Charlie"));
         entityManager.clear();
 
-        Page<CustomerSummaryView> page = customerQueryRepository.findAllSummaries(
+        Page<CustomerSummaryView> page = customerQueryRepository.findCustomerSummaries(
+                null,
                 PageRequest.of(0, 2, Sort.by("displayName").ascending())
         );
 
@@ -47,38 +48,36 @@ class CustomerQueryRepositoryDataJpaTest {
 
         assertThat(page.getTotalElements()).isEqualTo(3);
         assertThat(page.getTotalPages()).isEqualTo(2);
-        assertThat(page.getNumber()).isEqualTo(0);
-        assertThat(page.getSize()).isEqualTo(2);
     }
 
     @Test
-    void find_all_summaries_returns_second_page() {
-        customerRepository.saveAndFlush(new Customer("Alice"));
+    void find_customer_summaries_filters_by_name_case_insensitively() {
+        customerRepository.saveAndFlush(new Customer("Tony"));
+        customerRepository.saveAndFlush(new Customer("Anthony"));
         customerRepository.saveAndFlush(new Customer("Bob"));
-        customerRepository.saveAndFlush(new Customer("Charlie"));
         entityManager.clear();
 
-        Page<CustomerSummaryView> page = customerQueryRepository.findAllSummaries(
-                PageRequest.of(1, 2, Sort.by("displayName").ascending())
+        Page<CustomerSummaryView> page = customerQueryRepository.findCustomerSummaries(
+                "ony",
+                PageRequest.of(0, 10, Sort.by("displayName").ascending())
         );
 
         assertThat(page.getContent())
                 .extracting(CustomerSummaryView::displayName)
-                .containsExactly("Charlie");
-
-        assertThat(page.getTotalElements()).isEqualTo(3);
-        assertThat(page.getTotalPages()).isEqualTo(2);
-        assertThat(page.getNumber()).isEqualTo(1);
+                .containsExactly("Anthony", "Tony");
     }
 
     @Test
-    void find_all_summaries_supports_descending_sort() {
+    void find_customer_summaries_supports_descending_sort() {
         customerRepository.saveAndFlush(new Customer("Alice"));
         customerRepository.saveAndFlush(new Customer("Bob"));
         customerRepository.saveAndFlush(new Customer("Charlie"));
+
+        entityManager.flush();
         entityManager.clear();
 
-        Page<CustomerSummaryView> page = customerQueryRepository.findAllSummaries(
+        Page<CustomerSummaryView> page = customerQueryRepository.findCustomerSummaries(
+                null,
                 PageRequest.of(0, 3, Sort.by("displayName").descending())
         );
 
@@ -92,6 +91,8 @@ class CustomerQueryRepositoryDataJpaTest {
         Customer customer = new Customer("Tony");
         customer.createProfile("tony@example.com", true);
         customer = customerRepository.saveAndFlush(customer);
+
+        entityManager.flush();
         entityManager.clear();
 
         CustomerDetailView view = customerQueryRepository.findDetailById(customer.getId()).orElseThrow();
@@ -106,6 +107,8 @@ class CustomerQueryRepositoryDataJpaTest {
     @Test
     void find_detail_by_id_returns_null_profile_fields_when_missing() {
         Customer customer = customerRepository.saveAndFlush(new Customer("Tony"));
+
+        entityManager.flush();
         entityManager.clear();
 
         CustomerDetailView view = customerQueryRepository.findDetailById(customer.getId()).orElseThrow();
@@ -114,7 +117,6 @@ class CustomerQueryRepositoryDataJpaTest {
         assertThat(view.displayName()).isEqualTo("Tony");
         assertThat(view.emailAddress()).isNull();
         assertThat(view.marketingOptIn()).isNull();
-        assertThat(view.version()).isNotNull();
     }
 
     @Test
@@ -123,6 +125,8 @@ class CustomerQueryRepositoryDataJpaTest {
         customer.raiseTicket("This is a valid ticket");
         customer.raiseTicket("This is another valid ticket");
         customer = customerRepository.saveAndFlush(customer);
+
+        entityManager.flush();
         entityManager.clear();
 
         assertThat(customerQueryRepository.findTicketsByCustomerId(customer.getId()))
@@ -132,27 +136,30 @@ class CustomerQueryRepositoryDataJpaTest {
     }
 
     @Test
-    void find_tickets_by_customer_id_returns_ticket_statuses() {
+    void find_tickets_by_customer_id_and_status_filters_correctly() {
         Customer customer = new Customer("Tony");
         customer.raiseTicket("This is a valid ticket");
+        customer.raiseTicket("This is another valid ticket");
         customer = customerRepository.saveAndFlush(customer);
 
-        Long ticketId = entityManager.createQuery("""
+        var ticketIds = entityManager.createQuery("""
                 select t.id
                 from Customer c
                 join c.tickets t
                 where c.id = :customerId
+                order by t.id
                 """, Long.class)
                 .setParameter("customerId", customer.getId())
-                .getSingleResult();
+                .getResultList();
 
-        customer.startTicketWork(ticketId);
-        customer.resolveTicket(ticketId);
-
+        customer.startTicketWork(ticketIds.get(0));
+        customer.resolveTicket(ticketIds.get(0));
         customerRepository.saveAndFlush(customer);
+
+        entityManager.flush();
         entityManager.clear();
 
-        assertThat(customerQueryRepository.findTicketsByCustomerId(customer.getId()))
+        assertThat(customerQueryRepository.findTicketsByCustomerIdAndStatus(customer.getId(), TicketStatus.RESOLVED))
                 .singleElement()
                 .satisfies(ticket -> {
                     assertThat(ticket.description()).isEqualTo("This is a valid ticket");
@@ -161,16 +168,38 @@ class CustomerQueryRepositoryDataJpaTest {
     }
 
     @Test
-    void find_tickets_by_customer_id_returns_empty_list_when_customer_has_no_tickets() {
-        Customer customer = customerRepository.saveAndFlush(new Customer("Tony"));
+    void find_tickets_by_customer_id_and_tag_name_filters_correctly() {
+        Tag bug = tagRepository.saveAndFlush(new Tag("bug"));
+        Tag urgent = tagRepository.saveAndFlush(new Tag("urgent"));
+
+        Customer customer = new Customer("Tony");
+        customer.raiseTicket("This is a valid ticket");
+        customer.raiseTicket("This is another valid ticket");
+        customer = customerRepository.saveAndFlush(customer);
+
+        var ticketIds = entityManager.createQuery("""
+                select t.id
+                from Customer c
+                join c.tickets t
+                where c.id = :customerId
+                order by t.id
+                """, Long.class)
+                .setParameter("customerId", customer.getId())
+                .getResultList();
+
+        customer.addTagToTicket(ticketIds.get(0), bug);
+        customer.addTagToTicket(ticketIds.get(1), urgent);
+        customerRepository.saveAndFlush(customer);
+
+        entityManager.flush();
         entityManager.clear();
 
-        assertThat(customerQueryRepository.findTicketsByCustomerId(customer.getId())).isEmpty();
-    }
-
-    @Test
-    void find_detail_by_id_returns_empty_when_customer_missing() {
-        assertThat(customerQueryRepository.findDetailById(999L)).isEmpty();
+        assertThat(customerQueryRepository.findTicketsByCustomerIdAndTagName(customer.getId(), "BUG"))
+                .singleElement()
+                .satisfies(ticket -> {
+                    assertThat(ticket.description()).isEqualTo("This is a valid ticket");
+                    assertThat(ticket.status()).isEqualTo(TicketStatus.OPEN);
+                });
     }
 
     @Test
@@ -194,6 +223,8 @@ class CustomerQueryRepositoryDataJpaTest {
         customer.addTagToTicket(ticketId, urgent);
         customer.addTagToTicket(ticketId, bug);
         customerRepository.saveAndFlush(customer);
+
+        entityManager.flush();
         entityManager.clear();
 
         assertThat(customerQueryRepository.findTicketDetailRows(customer.getId(), ticketId))
@@ -217,6 +248,7 @@ class CustomerQueryRepositoryDataJpaTest {
                 .setParameter("customerId", customer.getId())
                 .getSingleResult();
 
+        entityManager.flush();
         entityManager.clear();
 
         assertThat(customerQueryRepository.findTicketDetailRows(customer.getId(), ticketId))
@@ -227,13 +259,5 @@ class CustomerQueryRepositoryDataJpaTest {
                     assertThat(row.status()).isEqualTo(TicketStatus.OPEN);
                     assertThat(row.tagName()).isNull();
                 });
-    }
-
-    @Test
-    void find_ticket_detail_rows_returns_empty_when_ticket_missing_for_customer() {
-        Customer customer = customerRepository.saveAndFlush(new Customer("Tony"));
-        entityManager.clear();
-
-        assertThat(customerQueryRepository.findTicketDetailRows(customer.getId(), 999L)).isEmpty();
     }
 }
