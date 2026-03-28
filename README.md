@@ -1,291 +1,263 @@
-# spring-jpa
-Setting up Java Persistence API (JPA) using Spring Boot 4 and Hibernate.
+# Spring Boot JPA – Aggregate + CQRS Demo
 
-# Overview
-JPA allows us to map Java objects to a relational database, whats called Object-Relational Mapping (ORM).
-Getting this right creates a solid persistence layer for Java applications backed by a relational database.
-At its core it allows us to effectively represent @OneToOne, @OneToMany, and @ManyToMany relationships at the 
-DB level.
-
-This repo represents the Java code to show how each of these relationships work on a practical level.
-
-A large part of confidence in releasing something to production is to have the right tests.
-So I have included a realistic set of tests.
-
-Plan is to create the entity/repository layer here, then build other layers over it.
-
-# The Entities
-I have chosen a simple Domain model for demonstration purposes:
-
-domain model ER diagram here.
-
-
-## The BaseEntity
-
-### Modelling @OneToMany, @ManyToMany, and @OneToOne relationships
-We will be modelling three relationships in our Entities:
-- Cus
-  https://medium.com/@davoud.badamchi/understanding-jpa-relationships-manytomany-onetomany-and-onetoone-ab84aa1953c1
-- 
-
-## The Customer entity
-For demonstration purposes the Customer entity contains a small amount of mutable data - the Customers name.
-Additional information about the Customer is held in the Profile entity (display name, and marketing options).
-A Customer has a single Profile and a Profile belongs to one Customer. 
-So Customer has a @OneToOne relationship with its Profile.
-
-Customers can have multiple Tickets and a Ticket belongs to a single Customer.
-So Customer has a @OneToMany relationship with Ticket.
-
-Let's look at the @OneToMany Customer->Ticket relationship first.
-These are usually the most straightforward to understand.
-
-
-### Customer @OneToMany relationship with Ticket (Bidirectional, Owning side is Ticket)
-In order to maintain a @OneToMany relationship in a database table we usually want the Many side of the 
-relationship to have a column which holds the primary key of the One side
-(called the 'foreign key' in this context).
-The database table / Entity holding this foreign key is called the 'Owning' side, with the other side 
-called the 'Inverse' side.
-This makes sense as the Ticket entity table 'knows' what Customer it has,
-while the same cannot be said of the Customer table (without a SELECT).
-This leans towards a database-centric view of the relationship.
-It describes how a bidirectional relationship is managed in the database.
-
-A more java-centric way of looking at @OneToMany relationships is Parent/Child.
-Here the parent (Customer) is the logical owner of the relationship, 
-even if the foreign key resides in the child (Ticket) table.
-For Parent/Child relationships the Parent would be in control of
-the relationship - for example having methods for adding and removing Children.
-Again this makes sense, particularly when we think of Children as a Collection within the Parent class.
-
-So Owning Side/Inverse Side defines the management of the relationship in the database,
-while Parent/Child is the relationship in terms of the Object model.
-We are dealing with an Object-Relation Mapping framework here,
-so it makes sense that we will be dealing with both the Database perspective (Owner/Inverse)
-and the Object perspective (Parent/Child) here in our Entity classes.
-
-Typically, a @OneToMany relationship will have the @One side as the Parent
-and the @Many side as the Owner. So in Customer we have:
-
-<pre>
-    @OneToMany(
-            mappedBy = "customer",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
-    private Set<Ticket> tickets = new HashSet<>();
-</pre>
-
-Let's break this down.
-
-mappedBy = "customer" : lives on the inverse side of the relationship and makes the relationship bidirectional.
-'mappedBy' points to the 
-
-
-'orphanRemoval = true' lives in the Parent entity.
-It automatically deletes a child entity from the database when it is
-removed from the Parent collection
-i.e. something like parent.getChildren().remove(child).
-So here we say to delete Ticket records in the database when they are removed from the 
-Customer.tickets collection.
-
-'cascade = CascadeType.ALL' : 
-
-'fetch = FetchType.LAZY' : 
-
-... and in Ticket:
-
-<pre>
-    @ManyToOne(
-            fetch = FetchType.LAZY, 
-            optional = false
-    )
-    @JoinColumn(
-            name = "customer_id", 
-            nullable = false
-    )
-    private Customer customer;
-</pre>
-
-In this type of @OneToMany relationship the Parent (Customer) is the place to
-put the methods that manipulate the Customer->Ticket relationship.
-We provide a methods to create and remove Tickets from the current Customer:
-
-<pre>
-    public Ticket raiseTicket(String description) {
-        if(description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be null");
-        Ticket ticket = new Ticket(description.strip());
-        addTicketInternal(ticket);
-        return ticket;
-    }
-
-    public void removeTicket(Ticket ticket) {
-        if(ticket == null) throw new IllegalArgumentException("Ticket must not be null");
-        // Object comparison like "ticket.getCustomer() != this" will not work properly
-        // with inherited BaseEntity.equals()/hashcode() as 'this' may be a Hibernate proxy
-        // ... need to ensure use of 'equals()' method '!this.equals(customer)'
-        if (!this.equals(ticket.getCustomer())) {
-            throw new IllegalArgumentException("Ticket does not belong to this Customer");
-        }
-        removeTicketInternal(ticket);
-    }
-</pre>
-
-While in the Ticket class we prevent mutation of the relationship by making the 
-constructor package-private, not providing setters, and making Collection getters return 
-Unmodifiable Collections.
-
-<pre>
-    Set<Ticket> getTickets() {
-        return Collections.unmodifiableSet(tickets);
-    }
-</pre>
-l
-This approach has been implemented in all of the entities.
-There are some subtle differences though that are worth noting when it comes to @OneToOne and @ManyToMany.
-
-### Ticket @ManyToMany relationship with Tag (Bidirectional, Owning side is Ticket)
-Lets turn our attention to the Ticket->Tag @ManyToMany relationship.
-Since we need to create a JOIN table here
-the Owning side will be which ever side takes charge of maintaining and updating the JOIN table,
-Since we will logically add or remove Tags to/from a Ticket, 
-it makes sense to make Ticket the Owner.
-
-Parent/Child makes less sense in a @ManyToMany relationship since both sides must hold a Collection.
+A focused Spring Boot application demonstrating:
 
-Here is what the Ticket->Tag looks like in Ticket:
+* Aggregate-oriented domain modelling (DDD-lite)
+* Clear separation of **Command vs Query**
+* Projection-based read model (no entity leakage)
+* REST API with validation and proper status codes
+* Layered testing strategy (domain → JPA → service → web)
 
-<pre>
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "ticket_tag",
-            joinColumns = @JoinColumn(name = "ticket_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private Set<Tag> tags = new HashSet<>();
-</pre>
+This is intentionally **not** a CRUD demo.
 
-... and the Inverse side in Tag:
+---
 
-<pre>
-    @ManyToMany(mappedBy = "tags")
-    private Set<Ticket> tickets = new HashSet<>();
-</pre>
+## 🧠 What this project demonstrates
 
-We control the mutation of the Ticket.tags Collection through Ticket:
-
-<pre>
-    public void addTag(Tag tag) {
-        requireEditable("addTag");
-        if (tag == null) return; // addTag should be idempotent
-        if (tags.add(tag)) {
-            tag.addTicketInternal(this);
-        }
-    }
+### 1. Rich Domain Model
 
-    public void removeTag(Tag tag) {
-        requireEditable("removeTag");
-        if (tag == null) return; // removeTag should be idempotent
-        if (tags.remove(tag)) {
-            tag.removeTicketInternal(this);
-        }
-    }
+* `Customer` is the **aggregate root**
+* `Ticket` and `Profile` are internal entities
+* No public setters — behaviour-driven methods only
+* Invariants enforced inside the domain
 
-    public void clearTags() {
-        requireEditable("clearTags");
-        for (Tag tag : new HashSet<>(tags)) {
-            removeTag(tag);
-        }
-    }
-</pre>
+Example:
 
-As before, we prevent mutation of the Ticket->Tag relationship by making the Ticket
-constructor package-private, not providing setters, and making Collection getters return
-Unmodifiable Collections.
+```java
+customer.raiseTicket("This is a valid ticket");
+customer.resolveTicket(ticketId);
+customer.addTagToTicket(ticketId, tag);
+```
 
-### Customer @OneToOne relationship with Profile (Unidirectional, Owning side is Customer)
+---
 
+### 2. Aggregate Boundaries
 
+* All mutations go through `Customer`
+* Child entities (`Ticket`, `Profile`) are not directly exposed
+* Relationships are managed internally
 
+This prevents:
 
+* inconsistent state
+* orphan logic in services/controllers
 
+---
 
-### inheriting from a BaseEntity
+### 3. Command / Query Separation
 
-## testing
+**Command side**
 
-Yes, test entities — but only where they contain rules
+* Loads full aggregate
+* Applies business rules
+* Persists changes
 
-No, don’t test annotations
+```java
+Customer customer = customerRepository.findAggregateById(id);
+customer.resolveTicket(ticketId);
+```
 
-Yes, test services a lot
+**Query side**
 
-Yes, test repositories where you depend on behavior
+* Uses DTO projections
+* No entity loading
+* Optimised for read performance
 
-Yes, test controllers for contracts
+```java
+select new CustomerSummaryView(...)
+from Customer c
+```
 
-Keep E2E tests few and meaningful
+---
 
-What I’ll cover (and only what’s worth covering for entities):
+### 4. JPA Usage Beyond Basics
 
-Bidirectional consistency
-Customer.addOrder/removeOrder/clearOrders
-Order.addProduct/removeProduct/clearProducts
-Customer.setContactInfo(...) with @MapsId
+* `@OneToOne`, `@OneToMany`, `@ManyToMany`
+* `cascade` + `orphanRemoval`
+* lazy loading
+* `@EntityGraph` for aggregate loading
+* projection queries for read side
 
-Orphan removal
-removing orders deletes rows
-removing contact info deletes row
-clearing collections removes join rows where appropriate
+---
 
-Immutability / guard rails
-unmodifiable collections can’t be mutated through getters
-ID/audit fields not settable
+### 5. REST API (Thin Controllers)
 
-Equals/hashCode “Set safety”
-transient entities don’t collapse; persisted ones behave as expected
+* Controllers map:
 
-We will avoid CRUD.
+  * HTTP → Commands (write)
+  * HTTP → Query DTOs (read)
+* No business logic in controllers
+* Validation via `jakarta.validation`
+* Consistent error handling
 
-### add / remove / clear Consistency Tests
+---
 
-### orphan removal Tests
+### 6. Filtering + Pagination
 
-### lock in equals / hashcode correctness Tests
+Examples:
 
-### pressure Tests
+```http
+GET /api/customers?page=0&size=10
+GET /api/customers?name=tony
+GET /api/customers/1/tickets?status=OPEN
+GET /api/customers/1/tickets?tag=bug
+```
 
-While its not always straightforward what one should be testing where Entites are concerned,
-we can begin with the tenant that we should test any code/logic we have added.
-In our case this mainly consists of the add, remove, and clear methods we have included 
-in the @ToMany relationships to maintain the realtionship integrity at the DB level.
+---
 
-In a Production system you do not want to be dealing with bugs from the JPA layer.
-If you are working on a already-in-production system these bugs have already implicated the client layer,
-and they may be very difficult to trace.
-All the while your database is potentially persisting these bugs at a data level.
-So let us try and lock down the JPA Entity layer so we feel confident, and can sleep well at night.
+### 7. Testing Strategy
 
-At the same time realise that re-testing what has already been tested is a code smell.
-It creates unnecessary complexity (more code to read and understand) and diverts attention from the 
-important bits.
+Layered tests:
 
-With JPA Entities we are operating within a framework where a lot of testing is already taking place.
-So for the sake of brevity and sanity we should try and avoid testing the framework itself too much.
-At the same time we are configuring the framework with Annotations.
-So one question is should we test our use of the JPA annotations is correct?
-We can break this down further as the annotations refer to different facets of the ORM.
+| Layer           | Approach                        |
+| --------------- | ------------------------------- |
+| Domain          | Plain unit tests                |
+| JPA             | `@DataJpaTest`                  |
+| Command Service | Transactional integration tests |
+| Query           | Projection + filtering tests    |
+| Web             | `@WebMvcTest` (slice tests)     |
 
+Important detail:
 
-# The Repositories
+> Tests use **flush + clear** to avoid false positives from persistence context caching.
 
-## highlights
+---
 
-### using projections
+## 🏗️ Architecture Overview
 
-## testing
+```
+web (REST controllers)
+   ↓
+application
+   ├── command (write use-cases)
+   └── query (read use-cases)
+   ↓
+domain (aggregate + invariants)
+   ↓
+persistence (Spring Data JPA)
+```
 
-# The Service layer
-next ...
+---
+
+## 📦 Key Packages
+
+```
+domain/
+  customer/
+  tag/
+
+application/
+  customer/
+    command/
+    query/
+
+web/
+  customer/
+
+```
+
+---
+
+## 🚀 Running the application
+
+### Requirements
+
+* Java 21
+* Maven
+
+### Run
+
+```bash
+mvn spring-boot:run
+```
+
+App will start on:
+
+```
+http://localhost:8080
+```
+
+---
+
+## 🔍 Example API Usage
+
+### Create a customer
+
+```bash
+curl -X POST http://localhost:8080/api/customers \
+  -H "Content-Type: application/json" \
+  -d '{ "displayName": "Tony" }'
+```
+
+---
+
+### Raise a ticket
+
+```bash
+curl -X POST http://localhost:8080/api/customers/1/tickets \
+  -H "Content-Type: application/json" \
+  -d '{ "description": "This is a valid ticket" }'
+```
+
+---
+
+### Resolve a ticket
+
+```bash
+curl -X POST http://localhost:8080/api/customers/1/tickets/10/resolve
+```
+
+---
+
+### Query customers
+
+```bash
+curl "http://localhost:8080/api/customers?page=0&size=5"
+```
+
+---
+
+### Filter tickets
+
+```bash
+curl "http://localhost:8080/api/customers/1/tickets?status=OPEN"
+curl "http://localhost:8080/api/customers/1/tickets?tag=bug"
+```
+
+---
+
+## ⚠️ What this project deliberately avoids
+
+* Generic CRUD services
+* Entity exposure in controllers
+* “God” service classes
+* Overuse of DTO mappers (MapStruct not required on query side)
+* Premature abstraction (no specifications/query DSL yet)
+
+---
+
+## 📈 Possible next steps
+
+If extending this demo:
+
+* Add containerisation (Docker + Postgres)
+* Add load testing (k6/Gatling)
+* Add authentication
+* Introduce domain events (e.g. TicketResolvedEvent)
+
+---
+
+## 🧩 Key Takeaway
+
+This project demonstrates that:
+
+> You can build a Spring Boot + JPA application that is
+> **not CRUD-driven**,
+> **not anemic**,
+> and **still simple to reason about and test**.
+
+---
+
+## 📄 License
+
+MIT (or your choice)
