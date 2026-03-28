@@ -233,6 +233,13 @@ curl "http://localhost:8080/api/customers/1/tickets?tag=bug"
 
 ---
 
+### Healthchecks
+
+```bash
+curl http://localhost:8080/actuator/health
+curl http://localhost:8080/api/customers?page=0&size=5
+```
+
 ## ⚠️ What this project deliberately avoids
 
 * Generic CRUD services
