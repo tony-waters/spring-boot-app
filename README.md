@@ -1,4 +1,4 @@
-# Spring Boot REST/JPA/DDD-lite Demo
+# Spring Boot REST/CQRS/JPA/DDD-lite Demo
 
 A focused Spring Boot REST application demonstrating:
 
