@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: spring-jpa
+  repository: ghcr.io/tony-waters/spring-boot-app
   tag: latest
   pullPolicy: IfNotPresent
 

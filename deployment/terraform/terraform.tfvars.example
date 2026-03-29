@@ -2,7 +2,7 @@ kube_context = "docker-desktop"
 
 namespace        = "spring-jpa-demo"
 release_name     = "spring-jpa"
-image_repository = "spring-jpa"
+image_repository = "ghcr.io/tony-waters/spring-boot-demo"
 image_tag        = "latest"
 
 replica_count = 1

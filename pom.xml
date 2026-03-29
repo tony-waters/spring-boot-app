@@ -13,9 +13,9 @@
 	</parent>
 
 	<groupId>uk.bit1</groupId>
-	<artifactId>spring-jpa</artifactId>
+	<artifactId>spring-boot-app</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>spring-jpa</name>
+	<name>spring-boot-app</name>
 	<description>Spring Boot JPA aggregate and CQRS sample</description>
 
 	<properties>
