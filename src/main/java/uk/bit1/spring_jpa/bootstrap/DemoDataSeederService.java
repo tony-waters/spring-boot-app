@@ -31,6 +31,7 @@ public class DemoDataSeederService {
 
     @Transactional
     public void seedIfEmpty() {
+        System.out.println("***** seeding *****");
 //        if (customerRepository.count() > 0) {
 //            log.info("Seed skipped: data already exists");
 //            return;
