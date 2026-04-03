@@ -1,26 +1,23 @@
 package uk.bit1.spring_jpa.bootstrap;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.bit1.spring_jpa.domain.customer.Customer;
 import uk.bit1.spring_jpa.domain.customer.CustomerRepository;
 import uk.bit1.spring_jpa.domain.tag.Tag;
 import uk.bit1.spring_jpa.domain.tag.TagRepository;
 
-import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 @Slf4j
-@Component
-@Profile("seed")
+@Service
 @RequiredArgsConstructor
-public class DemoDataSeeder implements CommandLineRunner {
+public class DemoDataSeederService {
 
     private static final int CUSTOMER_COUNT = 5_000;
     private static final long RANDOM_SEED = 42L;
@@ -31,9 +28,8 @@ public class DemoDataSeeder implements CommandLineRunner {
 
     private final Random random = new Random(RANDOM_SEED);
 
-    @Override
     @Transactional
-    public void run(String... args) {
+    public void seedIfEmpty() {
         if (customerRepository.count() > 0) {
             log.info("Seed skipped: data already exists");
             return;
@@ -137,7 +133,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                     customer.closeTicket(ticketId);
                 }
 
-                int tagCount = random.nextInt(4); // 0-3 tags
+                int tagCount = random.nextInt(4);
                 List<Tag> chosen = pickDistinctTags(tags, tagCount);
                 for (Tag tag : chosen) {
                     customer.addTagToTicket(ticketId, tag);
