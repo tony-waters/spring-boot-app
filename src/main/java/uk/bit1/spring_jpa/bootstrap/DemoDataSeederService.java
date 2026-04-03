@@ -31,10 +31,10 @@ public class DemoDataSeederService {
 
     @Transactional
     public void seedIfEmpty() {
-        if (customerRepository.count() > 0) {
-            log.info("Seed skipped: data already exists");
-            return;
-        }
+//        if (customerRepository.count() > 0) {
+//            log.info("Seed skipped: data already exists");
+//            return;
+//        }
 
         log.info("Creating tags...");
         List<Tag> tags = createTags();
