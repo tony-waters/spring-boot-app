@@ -49,5 +49,5 @@ jobs:
           file: Dockerfile
           push: true
 #          tags: ${{ steps.meta.outputs.tags }}
-          tags: latest
+          tags: ${{ github.repository_owner }}/spring-boot-app:latest
           labels: ${{ steps.meta.outputs.labels }}
