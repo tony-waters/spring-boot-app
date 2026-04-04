@@ -3,7 +3,6 @@ package uk.bit1.spring_jpa.bootstrap;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.bit1.spring_jpa.domain.customer.Customer;
@@ -21,6 +20,7 @@ import java.util.Random;
 public class DemoDataSeederService {
 
     private static final int CUSTOMER_COUNT = 5_000;
+    private static final int BATCH_SIZE = 250;
     private static final long RANDOM_SEED = 42L;
 
     private final CustomerRepository customerRepository;
@@ -31,23 +31,31 @@ public class DemoDataSeederService {
 
     @Transactional
     public void seedIfEmpty() {
-        System.out.println("***** seeding *****");
-//        if (customerRepository.count() > 0) {
-//            log.info("Seed skipped: data already exists");
-//            return;
-//        }
+        if (customerRepository.count() > 0) {
+            log.info("Seed skipped: data already exists");
+            return;
+        }
 
-        log.info("Creating tags...");
+        log.info("Seeding started");
+
         List<Tag> tags = createTags();
+        createCustomersWithTickets();
 
-        log.info("Creating customers, profiles, and tickets...");
-        List<Customer> batch = new ArrayList<>(500);
+        entityManager.clear();
+
+        enrichTickets(tags);
+
+        log.info("Seed complete: {} customers", customerRepository.count());
+    }
+
+    private void createCustomersWithTickets() {
+        List<Customer> batch = new ArrayList<>(BATCH_SIZE);
 
         for (int i = 0; i < CUSTOMER_COUNT; i++) {
             Customer customer = buildCustomer(i);
             batch.add(customer);
 
-            if (batch.size() == 500) {
+            if (batch.size() == BATCH_SIZE) {
                 customerRepository.saveAll(batch);
                 customerRepository.flush();
                 batch.clear();
@@ -59,27 +67,6 @@ public class DemoDataSeederService {
             customerRepository.saveAll(batch);
             customerRepository.flush();
         }
-
-        entityManager.clear();
-
-        log.info("Enriching ticket states and tags...");
-        enrichTickets(tags);
-
-        log.info("Seed complete: {} customers", customerRepository.count());
-    }
-
-    private List<Tag> createTags() {
-        List<String> names = List.of(
-                "bug", "urgent", "billing", "support", "onboarding",
-                "api", "ui", "performance", "reporting", "data-import"
-        );
-
-        List<Tag> tags = new ArrayList<>();
-        for (String name : names) {
-            tags.add(tagRepository.save(new Tag(name)));
-        }
-        tagRepository.flush();
-        return tags;
     }
 
     private Customer buildCustomer(int index) {
@@ -101,10 +88,10 @@ public class DemoDataSeederService {
     @Transactional
     protected void enrichTickets(List<Tag> tags) {
         List<Long> customerIds = entityManager.createQuery("""
-                select c.id
-                from Customer c
-                order by c.id
-                """, Long.class)
+            select c.id
+            from Customer c
+            order by c.id
+            """, Long.class)
                 .getResultList();
 
         int processed = 0;
@@ -113,37 +100,42 @@ public class DemoDataSeederService {
             Customer customer = customerRepository.findAggregateById(customerId).orElseThrow();
 
             List<Long> ticketIds = entityManager.createQuery("""
-                    select t.id
-                    from Customer c
-                    join c.tickets t
-                    where c.id = :customerId
-                    order by t.id
-                    """, Long.class)
+                select t.id
+                from Customer c
+                join c.tickets t
+                where c.id = :customerId
+                order by t.id
+                """, Long.class)
                     .setParameter("customerId", customerId)
                     .getResultList();
 
             for (Long ticketId : ticketIds) {
+
+                // add tags while ticket is still editable
+                int tagCount = random.nextInt(4); // 0-3 tags
+                List<Tag> chosen = pickDistinctTags(tags, tagCount);
+                for (Tag tag : chosen) {
+                    customer.addTagToTicket(ticketId, tag);
+                }
+
+                // then move to final state
                 int roll = random.nextInt(100);
 
                 if (roll < 25) {
                     customer.startTicketWork(ticketId);
                 } else if (roll < 45) {
+                    customer.startTicketWork(ticketId);
                     customer.resolveTicket(ticketId);
                 } else if (roll < 55) {
                     customer.startTicketWork(ticketId);
                     customer.resolveTicket(ticketId);
                     customer.closeTicket(ticketId);
                 }
-
-                int tagCount = random.nextInt(4);
-                List<Tag> chosen = pickDistinctTags(tags, tagCount);
-                for (Tag tag : chosen) {
-                    customer.addTagToTicket(ticketId, tag);
-                }
+                // else leave OPEN
             }
 
             processed++;
-            if (processed % 250 == 0) {
+            if (processed % BATCH_SIZE == 0) {
                 customerRepository.flush();
                 entityManager.clear();
                 log.info("Enriched {} customers", processed);
@@ -152,6 +144,20 @@ public class DemoDataSeederService {
 
         customerRepository.flush();
         entityManager.clear();
+    }
+    private List<Tag> createTags() {
+        List<String> names = List.of(
+                "bug", "urgent", "billing", "support", "onboarding",
+                "api", "ui", "performance", "reporting", "data-import"
+        );
+
+        List<Tag> tags = new ArrayList<>();
+        for (String name : names) {
+            tags.add(tagRepository.save(new Tag(name)));
+        }
+
+        tagRepository.flush();
+        return tags;
     }
 
     private List<Tag> pickDistinctTags(List<Tag> tags, int count) {
@@ -168,14 +174,15 @@ public class DemoDataSeederService {
 
     private String randomDisplayName(int index) {
         String[] firstNames = {
-                "Tony", "Anthony", "Tom", "Toni", "Alice", "Bob", "Charlie", "David", "Emily",
-                "Emma", "Olivia", "Liam", "Noah", "Ava", "Mia", "Sophia", "James", "Daniel",
-                "Grace", "Ella", "Henry", "Isla", "Jack", "Leo", "Freya"
+                "Tony", "Anthony", "Tom", "Toni", "Alice", "Bob", "Charlie", "David",
+                "Emily", "Emma", "Olivia", "Liam", "Noah", "Ava", "Mia", "Sophia",
+                "James", "Daniel", "Grace", "Ella", "Henry", "Isla", "Jack", "Leo", "Freya"
         };
 
         String[] lastNames = {
-                "Smith", "Jones", "Taylor", "Brown", "Williams", "Davies", "Evans", "Thomas",
-                "Roberts", "Johnson", "Walker", "Wright", "Hall", "Allen", "Young", "King"
+                "Smith", "Jones", "Taylor", "Brown", "Williams", "Davies", "Evans",
+                "Thomas", "Roberts", "Johnson", "Walker", "Wright", "Hall", "Allen",
+                "Young", "King"
         };
 
         String first = firstNames[random.nextInt(firstNames.length)];
