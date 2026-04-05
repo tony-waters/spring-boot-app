@@ -121,13 +121,13 @@ GET /api/customers/1/tickets?tag=bug
 
 Layered tests:
 
-| Layer           | Approach                        |
-| --------------- | ------------------------------- |
-| Domain          | Plain unit tests                |
-| JPA             | `@DataJpaTest`                  |
-| Command Service | Transactional integration tests |
-| Query           | Projection + filtering tests    |
-| Web             | `@WebMvcTest` (slice tests)     |
+| Layer           | Approach                     |
+|-----------------|------------------------------|
+| Domain          | Plain unit tests             |
+| JPA             | `@DataJpaTest`               |
+| Command Service | Transactional tests          |
+| Query Service   | Projection + filtering tests |
+| Web             | `@WebMvcTest` (slice tests)  |
 
 ---
 
