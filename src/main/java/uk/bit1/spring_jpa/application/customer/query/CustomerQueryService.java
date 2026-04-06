@@ -29,12 +29,16 @@ public class CustomerQueryService {
 
         String normalizedName = normalizeFilter(name);
 
-        return customerQueryRepository.findCustomerSummaries(normalizedName, effectivePageable);
+        if (normalizedName == null) {
+            return customerQueryRepository.findCustomerSummaries(effectivePageable);
+        }
+
+        return customerQueryRepository.findCustomerSummariesByName(normalizedName, effectivePageable);
     }
 
     public CustomerDetailView findCustomerDetail(Long customerId) {
         return customerQueryRepository.findDetailById(customerId)
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + customerId));
+                .orElseThrow(() -> new CustomerNotFoundException(customerId));
     }
 
     public List<TicketListItemView> findTicketsForCustomer(Long customerId, TicketStatus status, String tagName) {
@@ -59,10 +63,7 @@ public class CustomerQueryService {
         List<TicketDetailRow> rows = customerQueryRepository.findTicketDetailRows(customerId, ticketId);
 
         if (rows.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Ticket not found for customer: customerId=%d, ticketId=%d"
-                            .formatted(customerId, ticketId)
-            );
+            throw new TicketNotFoundException(customerId, ticketId);
         }
 
         TicketDetailRow first = rows.getFirst();

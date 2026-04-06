@@ -38,7 +38,6 @@ class CustomerQueryRepositoryDataJpaTest {
         entityManager.clear();
 
         Page<CustomerSummaryView> page = customerQueryRepository.findCustomerSummaries(
-                null,
                 PageRequest.of(0, 2, Sort.by("displayName").ascending())
         );
 
@@ -57,7 +56,7 @@ class CustomerQueryRepositoryDataJpaTest {
         customerRepository.saveAndFlush(new Customer("Bob"));
         entityManager.clear();
 
-        Page<CustomerSummaryView> page = customerQueryRepository.findCustomerSummaries(
+        Page<CustomerSummaryView> page = customerQueryRepository.findCustomerSummariesByName(
                 "ony",
                 PageRequest.of(0, 10, Sort.by("displayName").ascending())
         );
@@ -77,7 +76,6 @@ class CustomerQueryRepositoryDataJpaTest {
         entityManager.clear();
 
         Page<CustomerSummaryView> page = customerQueryRepository.findCustomerSummaries(
-                null,
                 PageRequest.of(0, 3, Sort.by("displayName").descending())
         );
 
@@ -184,18 +182,19 @@ class CustomerQueryRepositoryDataJpaTest {
         entityManager.clear();
 
         var ticketIds = entityManager.createQuery("""
-                select t.id
-                from Customer c
-                join c.tickets t
-                where c.id = :customerId
-                order by t.id
-                """, Long.class)
+            select t.id
+            from Customer c
+            join c.tickets t
+            where c.id = :customerId
+            order by t.id
+            """, Long.class)
                 .setParameter("customerId", customer.getId())
                 .getResultList();
 
-        customer.addTagToTicket(ticketIds.get(0), bug);
-        customer.addTagToTicket(ticketIds.get(1), urgent);
-        customerRepository.saveAndFlush(customer);
+        Customer managedCustomer = customerRepository.findAggregateById(customer.getId()).orElseThrow();
+        managedCustomer.addTagToTicket(ticketIds.get(0), bug);
+        managedCustomer.addTagToTicket(ticketIds.get(1), urgent);
+        customerRepository.saveAndFlush(managedCustomer);
 
         entityManager.flush();
         entityManager.clear();

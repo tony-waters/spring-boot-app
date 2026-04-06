@@ -3,6 +3,7 @@ package uk.bit1.spring_jpa.application.customer.command;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.bit1.spring_jpa.application.customer.query.CustomerNotFoundException;
 import uk.bit1.spring_jpa.domain.customer.Customer;
 import uk.bit1.spring_jpa.domain.customer.CustomerRepository;
 import uk.bit1.spring_jpa.domain.tag.Tag;
@@ -76,7 +77,7 @@ public class CustomerCommandService {
 
     private Customer loadCustomer(Long customerId) {
         return customerRepository.findAggregateById(customerId)
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + customerId));
+                .orElseThrow(() -> new CustomerNotFoundException(customerId));
     }
 
     private Tag loadOrCreateTag(String rawName) {

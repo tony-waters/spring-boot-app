@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import uk.bit1.spring_jpa.application.customer.query.CustomerNotFoundException;
 import uk.bit1.spring_jpa.domain.customer.Customer;
 import uk.bit1.spring_jpa.domain.customer.CustomerRepository;
 import uk.bit1.spring_jpa.domain.customer.TicketStatus;
@@ -287,7 +288,7 @@ class CustomerCommandServiceDataJpaTest {
     void change_display_name_fails_when_customer_not_found() {
         assertThatThrownBy(() ->
                 service.changeDisplayName(new ChangeDisplayNameCommand(999L, "X"))
-        ).isInstanceOf(IllegalArgumentException.class)
+        ).isInstanceOf(CustomerNotFoundException.class)
                 .hasMessage("Customer not found: 999");
     }
 
@@ -295,7 +296,7 @@ class CustomerCommandServiceDataJpaTest {
     void create_profile_fails_when_customer_not_found() {
         assertThatThrownBy(() ->
                 service.createProfile(new CreateProfileCommand(999L, "tony@example.com", true))
-        ).isInstanceOf(IllegalArgumentException.class)
+        ).isInstanceOf(CustomerNotFoundException.class)
                 .hasMessage("Customer not found: 999");
     }
 

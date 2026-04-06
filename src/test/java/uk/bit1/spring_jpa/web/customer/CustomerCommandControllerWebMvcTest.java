@@ -3,9 +3,10 @@ package uk.bit1.spring_jpa.web.customer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.bit1.spring_jpa.application.customer.command.CustomerCommandService;
+import uk.bit1.spring_jpa.application.customer.query.CustomerNotFoundException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -226,8 +227,8 @@ class CustomerCommandControllerWebMvcTest {
     }
 
     @Test
-    void returns_400_when_service_throws_illegal_argument() throws Exception {
-        org.mockito.BDDMockito.willThrow(new IllegalArgumentException("Customer not found: 999"))
+    void returns_404_when_customer_missing() throws Exception {
+        org.mockito.BDDMockito.willThrow(new CustomerNotFoundException(999L))
                 .given(customerCommandService)
                 .changeDisplayName(any());
 
@@ -238,8 +239,6 @@ class CustomerCommandControllerWebMvcTest {
                                   "displayName": "Anthony"
                                 }
                                 """))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.title").value("Bad Request"))
-                .andExpect(jsonPath("$.detail").value("Customer not found: 999"));
+                .andExpect(status().isNotFound());
     }
 }

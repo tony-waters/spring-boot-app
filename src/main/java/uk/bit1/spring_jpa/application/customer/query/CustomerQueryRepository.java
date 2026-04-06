@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
 import uk.bit1.spring_jpa.domain.customer.Customer;
 import uk.bit1.spring_jpa.domain.customer.TicketStatus;
 
@@ -18,9 +19,18 @@ public interface CustomerQueryRepository extends Repository<Customer, Long> {
             c.displayName
         )
         from Customer c
-        where (:name is null or lower(c.displayName) like lower(concat('%', :name, '%')))
     """)
-    Page<CustomerSummaryView> findCustomerSummaries(String name, Pageable pageable);
+    Page<CustomerSummaryView> findCustomerSummaries(Pageable pageable);
+
+    @Query("""
+        select new uk.bit1.spring_jpa.application.customer.query.CustomerSummaryView(
+            c.id,
+            c.displayName
+        )
+        from Customer c
+        where lower(c.displayName) like concat('%', lower(:name), '%')
+    """)
+    Page<CustomerSummaryView> findCustomerSummariesByName(@Param("name") String name, Pageable pageable);
 
     @Query("""
         select new uk.bit1.spring_jpa.application.customer.query.CustomerDetailView(
@@ -34,7 +44,7 @@ public interface CustomerQueryRepository extends Repository<Customer, Long> {
         left join c.profile p
         where c.id = :customerId
     """)
-    Optional<CustomerDetailView> findDetailById(Long customerId);
+    Optional<CustomerDetailView> findDetailById(@Param("customerId") Long customerId);
 
     @Query("""
         select new uk.bit1.spring_jpa.application.customer.query.TicketListItemView(
@@ -47,7 +57,7 @@ public interface CustomerQueryRepository extends Repository<Customer, Long> {
         where c.id = :customerId
         order by t.id
     """)
-    List<TicketListItemView> findTicketsByCustomerId(Long customerId);
+    List<TicketListItemView> findTicketsByCustomerId(@Param("customerId") Long customerId);
 
     @Query("""
         select new uk.bit1.spring_jpa.application.customer.query.TicketListItemView(
@@ -61,7 +71,10 @@ public interface CustomerQueryRepository extends Repository<Customer, Long> {
           and t.status = :status
         order by t.id
     """)
-    List<TicketListItemView> findTicketsByCustomerIdAndStatus(Long customerId, TicketStatus status);
+    List<TicketListItemView> findTicketsByCustomerIdAndStatus(
+            @Param("customerId") Long customerId,
+            @Param("status") TicketStatus status
+    );
 
     @Query("""
         select new uk.bit1.spring_jpa.application.customer.query.TicketListItemView(
@@ -76,7 +89,10 @@ public interface CustomerQueryRepository extends Repository<Customer, Long> {
           and lower(tag.name) = lower(:tagName)
         order by t.id
     """)
-    List<TicketListItemView> findTicketsByCustomerIdAndTagName(Long customerId, String tagName);
+    List<TicketListItemView> findTicketsByCustomerIdAndTagName(
+            @Param("customerId") Long customerId,
+            @Param("tagName") String tagName
+    );
 
     @Query("""
         select new uk.bit1.spring_jpa.application.customer.query.TicketDetailRow(
@@ -92,5 +108,8 @@ public interface CustomerQueryRepository extends Repository<Customer, Long> {
           and t.id = :ticketId
         order by tag.name
     """)
-    List<TicketDetailRow> findTicketDetailRows(Long customerId, Long ticketId);
+    List<TicketDetailRow> findTicketDetailRows(
+            @Param("customerId") Long customerId,
+            @Param("ticketId") Long ticketId
+    );
 }

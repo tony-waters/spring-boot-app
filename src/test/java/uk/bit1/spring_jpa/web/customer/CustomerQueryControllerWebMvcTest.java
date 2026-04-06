@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.bit1.spring_jpa.application.customer.query.CustomerDetailView;
+import uk.bit1.spring_jpa.application.customer.query.CustomerNotFoundException;
 import uk.bit1.spring_jpa.application.customer.query.CustomerQueryService;
 import uk.bit1.spring_jpa.application.customer.query.CustomerSummaryView;
 import uk.bit1.spring_jpa.application.customer.query.TicketDetailView;
@@ -153,13 +154,11 @@ class CustomerQueryControllerWebMvcTest {
     }
 
     @Test
-    void find_customer_returns_bad_request_when_service_throws_illegal_argument() throws Exception {
+    void find_customer_returns_not_found_when_customer_missing() throws Exception {
         given(customerQueryService.findCustomerDetail(999L))
-                .willThrow(new IllegalArgumentException("Customer not found: 999"));
+                .willThrow(new CustomerNotFoundException(999L));
 
         mockMvc.perform(get("/api/customers/999"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.title").value("Bad Request"))
-                .andExpect(jsonPath("$.detail").value("Customer not found: 999"));
+                .andExpect(status().isNotFound());
     }
 }
