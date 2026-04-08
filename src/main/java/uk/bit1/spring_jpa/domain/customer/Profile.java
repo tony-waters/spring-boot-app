@@ -4,11 +4,12 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import uk.bit1.spring_jpa.domain.common.BaseEntity;
 
 @Entity
-@Table(name = "customer_profile")
+@Table(name = "profile")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-class Profile {
+class Profile extends BaseEntity {
 
     @Id
     @SequenceGenerator(name = "global_seq", sequenceName = "global_seq", allocationSize = 50)

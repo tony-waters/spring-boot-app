@@ -382,7 +382,7 @@ It forms the foundation for the Kubernetes deployment shown later.
 
 If extending this demo:
 
-* Add containerisation (Docker + Postgres)
+* ~~Add containerisation (Docker + Postgres)~~
 * Add load testing (k6/Gatling)
 * Add authentication
 * Introduce domain events (e.g. TicketResolvedEvent)

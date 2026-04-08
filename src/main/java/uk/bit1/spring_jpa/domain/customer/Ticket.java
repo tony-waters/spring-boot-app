@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import uk.bit1.spring_jpa.domain.common.BaseEntity;
 import uk.bit1.spring_jpa.domain.tag.Tag;
 
 import java.util.Collections;
@@ -17,7 +18,7 @@ import java.util.Set;
         indexes = @Index(name = "idx_ticket_customer_id", columnList = "customer_id")
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-class Ticket {
+class Ticket extends BaseEntity {
 
     @Id
     @SequenceGenerator(name = "global_seq", sequenceName = "global_seq", allocationSize = 50)
