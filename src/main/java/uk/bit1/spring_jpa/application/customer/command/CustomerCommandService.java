@@ -3,6 +3,7 @@ package uk.bit1.spring_jpa.application.customer.command;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.bit1.spring_jpa.application.customer.command.commands.*;
 import uk.bit1.spring_jpa.application.customer.query.CustomerNotFoundException;
 import uk.bit1.spring_jpa.domain.customer.Customer;
 import uk.bit1.spring_jpa.domain.customer.CustomerRepository;

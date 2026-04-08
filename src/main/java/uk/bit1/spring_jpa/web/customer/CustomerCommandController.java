@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.bit1.spring_jpa.application.customer.command.*;
+import uk.bit1.spring_jpa.application.customer.command.commands.*;
 import uk.bit1.spring_jpa.web.customer.dto.*;
 
 import java.net.URI;
