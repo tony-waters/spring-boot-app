@@ -27,4 +27,4 @@ management:
 
 logging:
   level:
-    root: INFO
+    root: ${APP_LOGGING_LEVEL:INFO}

@@ -16,8 +16,9 @@ public class SeedCommandLineRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        log.info("SEEDING! Starting seed process!");
         demoDataSeederService.seedIfEmpty();
-        log.info("Seed profile completed, shutting down application");
+        log.info("SEEDING! Seed profile completed, shutting down application");
         System.exit(0);
     }
 }
