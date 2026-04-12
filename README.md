@@ -131,41 +131,6 @@ Layered tests:
 
 ---
 
-## 🏗️ Architecture Overview
-
-```
-web (REST controllers)
-   ↓
-application
-   ├── command (write use-cases)
-   └── query (read use-cases)
-   ↓
-domain (aggregate + invariants)
-   ↓
-persistence (Spring Data JPA)
-```
-
----
-
-## 📦 Key Packages
-
-```
-domain/
-  customer/
-  tag/
-
-application/
-  customer/
-    command/
-    query/
-
-web/
-  customer/
-
-```
-
----
-
 ## 🚀 Running the application with Maven
 
 ### Requirements
@@ -254,7 +219,7 @@ This project can be run locally using Docker Compose, with:
 ### 🚀 Start the application
 
 ```bash
-docker compose up --build
+docker-compose up --build
 ```
 
 This will:
@@ -345,13 +310,13 @@ All configuration is provided via environment variables:
 ### 🛑 Stop the application
 
 ```bash
-docker compose down
+docker-compose down
 ```
 
 To remove the database volume as well:
 
 ```bash
-docker compose down -v
+docker-compose down -v
 ```
 
 ---
@@ -383,7 +348,7 @@ It forms the foundation for the Kubernetes deployment shown later.
 If extending this demo:
 
 * ~~Add containerisation (Docker + Postgres)~~
-* Add load testing (k6/Gatling)
+* ~~Add load testing (k6/Gatling)~~
 * Add authentication
 * Introduce domain events (e.g. TicketResolvedEvent)
 * Develop Tag as a separate aggregate route
