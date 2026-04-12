@@ -19,7 +19,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class DemoDataSeederService {
 
-    private static final int CUSTOMER_COUNT = 5_000;
+    private static final int CUSTOMER_COUNT = 5_000; // TODO: make this value externalised
 //    private static final int CUSTOMER_COUNT = 100;
     private static final int BATCH_SIZE = 250;
     private static final long RANDOM_SEED = 42L;
