@@ -1,5 +1,7 @@
 # Spring Boot REST/CQRS/JPA/DDD-lite Demo
 
+See [this post](https://tony-waters.github.io/2026/03/03/demo-spring-rest-app.html).
+
 A focused Spring Boot REST application demonstrating:
 
 * @OneToOne, @OneToMany, and @ManyToMany JPA relationships
@@ -157,7 +159,7 @@ http://localhost:8080
 ### Create a customer
 
 ```bash
-curl -X POST http://localhost:8080/api/customers \
+curl -v -X POST http://localhost:8080/api/customers \
   -H "Content-Type: application/json" \
   -d '{ "displayName": "Tony" }'
 ```
@@ -167,7 +169,7 @@ curl -X POST http://localhost:8080/api/customers \
 ### Raise a ticket
 
 ```bash
-curl -X POST http://localhost:8080/api/customers/1/tickets \
+curl -v -X POST http://localhost:8080/api/customers/1/tickets \
   -H "Content-Type: application/json" \
   -d '{ "description": "This is a valid ticket" }'
 ```
@@ -177,7 +179,7 @@ curl -X POST http://localhost:8080/api/customers/1/tickets \
 ### Resolve a ticket
 
 ```bash
-curl -X POST http://localhost:8080/api/customers/1/tickets/10/resolve
+curl -v -X POST http://localhost:8080/api/customers/1/tickets/10/resolve
 ```
 
 ---
@@ -185,7 +187,7 @@ curl -X POST http://localhost:8080/api/customers/1/tickets/10/resolve
 ### Query customers
 
 ```bash
-curl "http://localhost:8080/api/customers?page=0&size=5"
+curl -v "http://localhost:8080/api/customers?page=0&size=5"
 ```
 
 ---
@@ -193,8 +195,8 @@ curl "http://localhost:8080/api/customers?page=0&size=5"
 ### Filter tickets
 
 ```bash
-curl "http://localhost:8080/api/customers/1/tickets?status=OPEN"
-curl "http://localhost:8080/api/customers/1/tickets?tag=bug"
+curl -v "http://localhost:8080/api/customers/1/tickets?status=OPEN"
+curl -v "http://localhost:8080/api/customers/1/tickets?tag=bug"
 ```
 
 ---
@@ -243,13 +245,13 @@ This will:
 Check health:
 
 ```bash
-curl http://localhost:8080/actuator/health
+curl -v http://localhost:8080/actuator/health
 ```
 
 Create a customer:
 
 ```bash
-curl -X POST http://localhost:8080/api/customers \
+curl -v -X POST http://localhost:8080/api/customers \
   -H "Content-Type: application/json" \
   -d '{"displayName":"Tony"}'
 ```
@@ -257,7 +259,7 @@ curl -X POST http://localhost:8080/api/customers \
 Query customers:
 
 ```bash
-curl "http://localhost:8080/api/customers?page=0&size=5"
+curl -v "http://localhost:8080/api/customers?page=0&size=5"
 ```
 
 ---
@@ -318,40 +320,6 @@ To remove the database volume as well:
 ```bash
 docker-compose down -v
 ```
-
----
-
-### 📈 Why this matters
-
-This setup demonstrates:
-
-* Containerised Spring Boot application
-* Externalised configuration (12-factor style)
-* Service-to-service networking
-* Real database integration
-
-It forms the foundation for the Kubernetes deployment shown later.
-
-
-## ⚠️ What this project deliberately avoids
-
-* Generic CRUD services
-* Entity exposure in controllers
-* “God” service classes
-* Overuse of DTO mappers (MapStruct not required on query side)
-* Premature abstraction (no specifications/query DSL yet)
-
----
-
-## 📈 Possible next steps
-
-If extending this demo:
-
-* ~~Add containerisation (Docker + Postgres)~~
-* ~~Add load testing (k6/Gatling)~~
-* Add authentication
-* Introduce domain events (e.g. TicketResolvedEvent)
-* Develop Tag as a separate aggregate route
 
 ---
 
