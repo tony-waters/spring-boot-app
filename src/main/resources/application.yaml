@@ -21,6 +21,8 @@ management:
       exposure:
         include: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE:health,info,prometheus}
   endpoint:
+    prometheus:
+      access: unrestricted
     health:
       probes:
         enabled: ${MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED:true}

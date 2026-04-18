@@ -38,7 +38,7 @@ services:
 
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
-      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
       MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: "true"
     ports:
       - "8080:8080"
