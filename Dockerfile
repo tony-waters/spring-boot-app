@@ -1,10 +1,10 @@
-FROM maven:3.9.11-eclipse-temurin-21 AS build
+FROM maven:3-eclipse-temurin-25 AS build
 WORKDIR /build
 COPY ./pom.xml .
 COPY ./src ./src
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 WORKDIR /app
 LABEL org.opencontainers.image.source="https://github.com/tony-waters/spring-boot-app"
 LABEL org.opencontainers.image.description="Spring Boot JPA aggregate + CQRS demo"
