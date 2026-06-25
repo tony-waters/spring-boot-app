@@ -49,6 +49,14 @@ public abstract class BaseEntity {
         return getId() != null && getId().equals(that.getId());
     }
 
+    // This implementation is widely recommended for JPA entities (including by experts such as Vlad Mihalcea) when equals()
+    // is based on the entity's database identity:
+    //
+    // - Stable before and after persistence.
+    // - Works correctly with Hibernate proxies.
+    // - Avoids breaking HashSet/HashMap when IDs are assigned.
+    // Produces many hash collisions, but that's generally considered an acceptable trade-off for correctness in JPA
+    //  entities.
     @Override
     public final int hashCode() {
         return Hibernate.getClass(this).hashCode();
