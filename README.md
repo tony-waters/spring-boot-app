@@ -16,7 +16,7 @@ A focused Spring Boot REST application demonstrating:
 
 ## Tech Stack
 
-- Java 21
+- Java ~~21~~25 (LTS)
 - Spring Boot 4.x
 - Spring Data JPA
 - Hibernate 7
