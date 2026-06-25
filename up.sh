@@ -1,5 +1,5 @@
 echo "Starting spring-boot-app system ..."
-docker-compose up --detach --wait
+docker compose up --detach --wait
 
 echo "Sleeping for 30 seconds while containers get ready ..."
 sleep 30
